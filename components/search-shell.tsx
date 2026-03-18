@@ -1,4 +1,5 @@
 import { fetchSearchResults } from "@/lib/search";
+import { AppHeader } from "@/components/app-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { SearchForm } from "@/components/search-form";
 
@@ -22,6 +23,7 @@ export async function SearchShell({ searchParams }: SearchShellProps) {
   return (
     <main className="page-shell">
       <div className="container stack">
+        <AppHeader />
         <section className="hero">
           <span className="eyebrow">DataGill Search UI Bootstrap</span>
           <h1 className="headline">Feature-flag search, with room to grow.</h1>
