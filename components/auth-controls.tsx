@@ -13,10 +13,16 @@ import { LoginForm } from "@/components/login-form";
 import { SignupForm } from "@/components/signup-form";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-export function AuthControls() {
+export function AuthControls({
+  showThemeToggle = true,
+  stacked = false,
+}: {
+  showThemeToggle?: boolean;
+  stacked?: boolean;
+}) {
   return (
-    <div className="flex items-center gap-2">
-      <ThemeToggle />
+    <div className={stacked ? "flex flex-col gap-2" : "flex items-center gap-2"}>
+      {showThemeToggle ? <ThemeToggle /> : null}
       <Dialog>
         <DialogTrigger asChild>
           <Button type="button" variant="outline">
