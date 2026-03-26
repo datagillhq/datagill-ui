@@ -1,61 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { MoonStar, SunMedium } from "lucide-react";
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 
-const STORAGE_KEY = "datagill-theme";
-type Theme = "light" | "dark";
-
-function getPreferredTheme(): Theme {
-  if (typeof window === "undefined") {
-    return "light";
-  }
-
-  const stored = window.localStorage.getItem(STORAGE_KEY);
-  if (stored === "light" || stored === "dark") {
-    return stored;
-  }
-
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
-}
-
-function applyTheme(theme: Theme) {
-  document.documentElement.dataset.theme = theme;
-  document.documentElement.style.colorScheme = theme;
-}
-
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("light");
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    const nextTheme = getPreferredTheme();
-    setTheme(nextTheme);
-    applyTheme(nextTheme);
-    setMounted(true);
-  }, []);
+  const { resolvedTheme, setTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   const toggleTheme = () => {
-    const nextTheme = theme === "light" ? "dark" : "light";
-    setTheme(nextTheme);
-    applyTheme(nextTheme);
-    window.localStorage.setItem(STORAGE_KEY, nextTheme);
+    setTheme(isDark ? "light" : "dark");
   };
 
   return (
     <Button
-      aria-label="Toggle dark mode"
-      className="theme-toggle"
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      className="rounded-full border-border/70 bg-card/80 shadow-sm"
       onClick={toggleTheme}
+      size="icon-lg"
       type="button"
-      variant="secondary"
+      variant="outline"
     >
-      <span aria-hidden="true">{mounted && theme === "dark" ? "Light" : "Dark"}</span>
-      <span className="theme-toggle-indicator" aria-hidden="true">
-        {mounted && theme === "dark" ? "Sun" : "Moon"}
-      </span>
+      {isDark ? <SunMedium className="size-4" /> : <MoonStar className="size-4" />}
     </Button>
   );
 }

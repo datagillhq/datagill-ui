@@ -1,11 +1,13 @@
-import { SearchShell } from "@/components/search-shell";
+import { AppHeader } from "@/components/app-header";
+import { HomePlaceholder } from "@/components/home-placeholder";
 
-type HomePageProps = {
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
-};
-
-export const dynamic = "force-dynamic";
-
-export default async function HomePage({ searchParams }: HomePageProps) {
-  return <SearchShell searchParams={searchParams} />;
+export default function HomePage() {
+  return (
+    <>
+      <AppHeader />
+      <main className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-7xl items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
+        <HomePlaceholder />
+      </main>
+    </>
+  );
 }

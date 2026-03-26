@@ -7,7 +7,7 @@ Minimal Next.js App Router frontend for the DataGill search experience.
 - Next.js
 - React
 - TypeScript
-- Local shadcn-style component structure
+- shadcn/ui + Radix primitives
 
 ## Local development
 
@@ -15,9 +15,13 @@ Minimal Next.js App Router frontend for the DataGill search experience.
 2. Start the search service first from `../datagill-core`.
 3. Run `npm install`.
 4. Start the UI with `npm run dev`.
-5. Open `http://localhost:3000`.
+5. Open `http://localhost:3001`.
 
 The UI fetches search results from `http://localhost:8082` by default. Override with `SEARCH_API_BASE_URL` if needed.
+
+Note:
+
+- `datagill-core` Docker Compose already uses `http://localhost:3000` for Grafana, so the UI intentionally defaults to port `3001` during local development to avoid collisions.
 
 ## Docker
 
@@ -29,9 +33,9 @@ From the repository root:
 
 1. Install Docker Desktop.
 2. Run `docker compose -f compose.local.yml up --build`.
-3. Open `http://localhost:3000`.
+3. Open `http://localhost:3001`.
 
 This starts:
 
-- UI on `http://localhost:3000`
+- UI on `http://localhost:3001`
 - Search Service on `http://localhost:8082`
