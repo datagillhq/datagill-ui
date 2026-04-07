@@ -37,22 +37,95 @@ For the full backend API contracts, read `datagill-core/docs/backend/integration
 | Data fetching | TanStack Query | `useQueries` for parallel dashboard fetches; optimistic updates for toggle |
 | Auth | BetterAuth (self-hosted) | See §2 |
 | Lint + format | Biome | Replaces ESLint + Prettier. Run `biome check`. Do not add ESLint rules. |
-| Package manager | npm (existing) | Do not switch to Bun without a dedicated migration PR |
+| Package manager | npm workspaces | Monorepo root at `datagill-ui/`. Do not switch to Bun without a dedicated migration PR. |
 | Type safety | TypeScript strict | `tsc --noEmit` must pass on every PR |
-| Env validation | `@t3-oss/env-nextjs` + Zod | All env vars declared in `src/lib/env.ts` |
+| Env validation | `@t3-oss/env-nextjs` + Zod | All env vars declared in `apps/app/src/lib/env.ts` |
 
 ---
 
-## 2. Auth — BetterAuth (Self-Hosted)
+## 2. Repository Structure
 
-BetterAuth runs **embedded in the Next.js app** as an API route handler at `app/api/auth/[...all]/route.ts`. It is not a separate process. Its data (users, sessions, accounts) lives in a dedicated Postgres instance (`auth-db`) defined in `docker-compose.yml`.
+```
+datagill-ui/                        ← workspace root
+├── apps/
+│   └── app/                        ← Next.js app (@datagill/app)
+│       ├── src/
+│       │   ├── app/
+│       │   │   ├── (auth)/         ← public: /sign-in, /sign-up
+│       │   │   ├── (app)/          ← protected: /dashboard, /onboarding/*, /settings/*
+│       │   │   │   ├── dashboard/
+│       │   │   │   ├── onboarding/
+│       │   │   │   └── settings/integrations/
+│       │   │   ├── api/auth/[...all]/route.ts  ← BetterAuth handler
+│       │   │   ├── globals.css
+│       │   │   └── layout.tsx
+│       │   ├── components/
+│       │   │   ├── ui/             ← shadcn primitives (generated — do not hand-edit)
+│       │   │   └── shared/         ← IntegrationModal, ProviderCard, etc.
+│       │   ├── lib/
+│       │   │   ├── api.ts          ← fetch wrapper with JWT injection (F.1)
+│       │   │   ├── providers.ts    ← static provider catalog (F.4)
+│       │   │   ├── query-client.ts ← TanStack Query client (F.1)
+│       │   │   └── env.ts          ← @t3-oss/env-nextjs schema (F.1)
+│       │   ├── hooks/
+│       │   └── middleware.ts       ← BetterAuth session guard (F.2)
+│       ├── __tests__/              ← Vitest unit + component tests
+│       ├── e2e/                    ← Playwright E2E tests
+│       ├── public/
+│       ├── components.json         ← shadcn config
+│       ├── next.config.ts
+│       ├── package.json            ← app deps (@datagill/app)
+│       ├── postcss.config.mjs
+│       ├── tailwind.config.ts
+│       ├── tsconfig.json           ← extends ../../tsconfig.json, @/* → ./src/*
+│       ├── vitest.config.ts
+│       ├── vitest.setup.ts
+│       └── playwright.config.ts
+├── packages/
+│   └── auth/                       ← BetterAuth abstraction (@datagill/auth)
+│       ├── client.ts               ← "use client" — useSession, signIn, signOut
+│       ├── server.ts               ← "server only" — getSession, auth handler config
+│       ├── provider.tsx            ← <SessionProvider> wrapper
+│       ├── keys.ts                 ← Zod env validation for auth vars
+│       └── package.json            ← @datagill/auth
+├── docs/
+│   └── implementation-plan.md
+├── scripts/
+│   └── check-lockfile.js
+├── .github/
+│   ├── workflows/ci.yml
+│   └── PULL_REQUEST_TEMPLATE.md
+├── AGENTS.md                       ← you are here
+├── CLAUDE.md
+├── biome.jsonc                     ← lint + format (applies to whole repo)
+├── .lefthook.yml
+├── Dockerfile
+├── docker-compose.yml
+├── .env.example
+├── package.json                    ← workspace root (workspaces: apps/*, packages/*)
+└── tsconfig.json                   ← base TypeScript config (extended by each package)
+```
+
+### Import rules
+
+- `@/*` resolves to `apps/app/src/*` — use this for all in-app imports
+- Auth: always import from `@datagill/auth/client`, `@datagill/auth/server`, or `@datagill/auth/provider` — never import from `better-auth` directly
+- Do not import between `apps/` — only `packages/` are shared
+
+---
+
+## 3. Auth — BetterAuth (Self-Hosted)
+
+BetterAuth runs **embedded in the Next.js app** as an API route handler at `apps/app/src/app/api/auth/[...all]/route.ts`. It is not a separate process. Its data (users, sessions, accounts) lives in a dedicated Postgres instance (`auth-db`) defined in `docker-compose.yml`.
+
+All auth abstractions live in `packages/auth/` — this is the only place in the repo that imports from `better-auth`. If we ever swap auth providers, it is a one-package change.
 
 ### Docker Services
 
 ```yaml
 # docker-compose.yml
 services:
-  app:               # Next.js + BetterAuth embedded — port 3000
+  app:               # Next.js + BetterAuth embedded — port 3001
   auth-db:           # Postgres 16 for BetterAuth — port 5433
 ```
 
@@ -60,7 +133,7 @@ services:
 
 ### Configuration
 
-`src/lib/auth.ts`:
+`packages/auth/server.ts` (implemented in F.2):
 - Adapter: Postgres pointing at `auth-db`
 - Plugins: `organization()`, `jwt()`, `invitation()`
 - Social providers: Google, GitHub
@@ -69,7 +142,7 @@ services:
 
 BetterAuth's JWT plugin **must** emit `organizationId` (the user's `activeOrganizationId`) as a claim. DataGill's backend validates this claim on every request — if it's missing, all API calls return 401.
 
-**Verify this before starting F.2.** Document the exact plugin config in `src/lib/auth.ts` once confirmed.
+**Verify this before starting F.2.** Document the exact plugin config in `packages/auth/server.ts` once confirmed.
 
 ### Ownership Boundary
 
@@ -83,7 +156,7 @@ BetterAuth's JWT plugin **must** emit `organizationId` (the user's `activeOrgani
 
 ### Middleware
 
-`src/middleware.ts` guards all routes under `/(app)/*`. Unauthenticated requests redirect to `/sign-in`.
+`apps/app/src/middleware.ts` guards all routes under `/(app)/*`. Unauthenticated requests redirect to `/sign-in`.
 
 ### Route Groups
 
@@ -94,9 +167,9 @@ BetterAuth's JWT plugin **must** emit `organizationId` (the user's `activeOrgani
 
 ---
 
-## 3. API Conventions
+## 4. API Conventions
 
-All DataGill API calls go through `src/lib/api.ts`. **Do not call `fetch` directly from pages or components.**
+All DataGill API calls go through `apps/app/src/lib/api.ts`. **Do not call `fetch` directly from pages or components.**
 
 - Attaches `Authorization: Bearer <token>` from BetterAuth session on every request
 - Backend returns error codes, not messages: `{ "code": "INTEGRATION_INVALID_API_KEY" }` — map to display strings in the frontend
@@ -114,15 +187,15 @@ All DataGill API calls go through `src/lib/api.ts`. **Do not call `fetch` direct
 
 ---
 
-## 4. Provider Catalog
+## 5. Provider Catalog
 
-The full list of providers (name, logo, description, tags, docsLink) lives statically in `src/lib/providers.ts`. The backend is not the source of truth for the catalog.
+The full list of providers (name, logo, description, tags, docsLink) lives statically in `apps/app/src/lib/providers.ts`. The backend is not the source of truth for the catalog.
 
 `GET /v1/integrations/providers` returns the list of **implemented** provider IDs. The frontend cross-references this to show "Coming Soon" on unimplemented providers. A backend deploy alone can enable a new provider — no frontend change needed.
 
 ---
 
-## 5. Mocks Required Before Coding
+## 6. Mocks Required Before Coding
 
 **Before writing any UI code for a page or component, ask the user for a mock or design reference.**
 
@@ -138,18 +211,7 @@ Exception: purely structural PRs (F.0, F.1) that have no user-visible UI do not 
 
 ---
 
-## 6. Testing
-
-- Max **100–150 lines** of changed code per PR — split if larger
-- All changes via branch + PR — no direct pushes to `main`
-- Branch prefix: `feat/`, `fix/`, `chore/`
-- `biome check` must pass before opening a PR
-- `tsc --noEmit` must pass before opening a PR
-- All PRs use the `.github/PULL_REQUEST_TEMPLATE.md`
-
----
-
-## 6. Testing
+## 7. Testing
 
 ### Tools
 
@@ -157,14 +219,14 @@ Exception: purely structural PRs (F.0, F.1) that have no user-visible UI do not 
 |---|---|
 | Vitest | Unit tests — pure functions, data transforms, error code mapping |
 | @testing-library/react | Component tests — render, interact, assert on DOM |
-| Playwright | E2E tests — full user journeys in a real browser, runs in CI |
+| Playwright | E2E tests — full user journeys in a real browser |
 | Claude in Chrome | Visual verification during development — agents take screenshots and interact with `localhost` |
 
 ### What to Test at Each Layer
 
 **Unit tests (Vitest)** — fast, no DOM needed:
-- `src/lib/api.ts` — error code mapping, request construction
-- `src/lib/providers.ts` — catalog filtering, Coming Soon logic
+- `apps/app/src/lib/api.ts` — error code mapping, request construction
+- `apps/app/src/lib/providers.ts` — catalog filtering, Coming Soon logic
 - Time formatting utilities (velocity "Xm / Xh Ym / X days")
 - Any pure data transform
 
@@ -185,12 +247,9 @@ Exception: purely structural PRs (F.0, F.1) that have no user-visible UI do not 
 ### Running Tests
 
 ```bash
-npm run test          # Vitest unit + component tests
+npm run test          # Vitest unit + component tests (delegates to apps/app)
 npm run test:e2e      # Playwright E2E (requires dev server running)
-npm run test:e2e:ui   # Playwright with UI mode for debugging
 ```
-
-CI runs `test` and `test:e2e` on every PR.
 
 ### Visual Verification with Claude in Chrome
 
@@ -201,11 +260,9 @@ Agents working on UI changes should use Claude in Chrome to visually verify thei
 npm run dev
 
 # In Claude Code, enable Chrome and ask it to verify
-# Example: "Open localhost:3000/onboarding, go through step 2,
+# Example: "Open localhost:3001/onboarding, go through step 2,
 # connect a LaunchDarkly integration, and screenshot the result"
 ```
-
-Claude in Chrome lets an agent click, type, and take screenshots of the running app — use this to catch layout issues, broken states, and interaction bugs that tests won't catch.
 
 ### Testing Philosophy
 
@@ -217,7 +274,7 @@ Claude in Chrome lets an agent click, type, and take screenshots of the running 
 
 ---
 
-## 7. PR Rules
+## 8. PR Rules
 
 - Max **100–150 lines** of changed code per PR — split if larger
 - All changes via branch + PR — no direct pushes to `main`
@@ -245,22 +302,20 @@ git diff --name-only   # shows files Biome modified but didn't stage
 git add -p             # review and stage the Biome fixes
 ```
 
-This is especially important when introducing Biome to existing files for the first time.
-
 ### Lockfile Rule — Most Common CI Failure
 
-CI uses `npm ci`, which hard-fails if `package-lock.json` is out of sync with `package.json`. **Any time you touch `package.json`:**
+CI uses `npm ci`, which hard-fails if `package-lock.json` is out of sync with `package.json`. **Any time you touch any `package.json` in the workspace:**
 
 ```bash
 npm install                  # regenerates package-lock.json
 git add package-lock.json    # commit it in the same commit
 ```
 
-Never commit a `package.json` change without the updated lockfile alongside it. The pre-push hook will catch this and block with a clear message before it ever hits CI.
+Never commit a `package.json` change without the updated lockfile alongside it.
 
 ---
 
-## 8. Implementation Plan
+## 9. Implementation Plan
 
 See `docs/implementation-plan.md` for the full PR sequence, parallelization diagram, and per-PR scope.
 
@@ -276,9 +331,17 @@ F.6 is the merge point of Tracks A and B — it requires both F.3 and F.5.
 
 ---
 
-## 9. Changelog
+## 10. Changelog
 
 ### 2026-04-07
+- Restructured to next-forge-inspired monorepo: `apps/app/` + `packages/auth/`
+- All source code moved to `apps/app/src/`; `@/*` alias now resolves to `apps/app/src/*`
+- `packages/auth/` added: thin BetterAuth abstraction (client/server/provider/keys) — only place that imports from `better-auth`
+- npm workspaces configured at root; `biome` and `lefthook` are root-only devDeps
+- Fixed duplicate §6 in this document
+- Updated all file path references throughout
+
+### Earlier — 2026-04-07
 - Replaced old scope (minimal search UI) with full product plan
 - Auth: BetterAuth chosen over Clerk. Self-hosted via Docker (`auth-db` Postgres service)
 - Data fetching: TanStack Query (resolved from TBD)
