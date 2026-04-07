@@ -1,0 +1,32 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file: .env.local
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      auth-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  auth-db:
+    image: postgres:16-alpine
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: datagill_auth
+      POSTGRES_USER: datagill
+      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD:-secret}
+    volumes:
+      - auth-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U datagill -d datagill_auth"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  auth-db-data:
