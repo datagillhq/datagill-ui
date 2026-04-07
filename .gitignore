@@ -4,3 +4,6 @@ dist
 coverage
 *.log
 Dockerfile.dev
+.env.local
+.env*.local
+tsconfig.tsbuildinfo
