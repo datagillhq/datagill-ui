@@ -11,7 +11,9 @@ import { Suspense, useState } from "react";
 function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/";
+  // Validate callbackUrl to prevent open redirect — only allow same-origin paths.
+  const raw = searchParams.get("callbackUrl") ?? "/";
+  const callbackUrl = raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

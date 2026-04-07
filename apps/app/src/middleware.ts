@@ -18,6 +18,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // One DB round-trip per non-public request — acceptable for current traffic.
+  // If latency becomes a concern, replace with a signed cookie check (no DB needed).
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
     const signIn = new URL("/sign-in", request.url);

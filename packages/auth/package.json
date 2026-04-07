@@ -14,7 +14,7 @@
     "zod": "*"
   },
   "dependencies": {
-    "@t3-oss/env-nextjs": "^0.13.11",
+    "@t3-oss/env-core": "^0.13.11",
     "@types/pg": "^8.20.0",
     "pg": "^8.20.0",
     "server-only": "^0.0.1"
