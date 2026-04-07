@@ -13,7 +13,7 @@ This document covers every PR needed to go from the current minimal bootstrap to
 | #10 | Next.js 15 CVE upgrades (11 advisories) | ✅ Merged |
 | #11 | F.1: `apiFetch`, env validation, TanStack Query | ✅ Merged |
 | #12 | F.2: BetterAuth email/password, RS256 JWT, middleware, auth pages | ✅ Merged |
-| #13 | Docs: frontend code review checklist in AGENTS.md | 🔁 In review |
+| #13 | Docs: frontend code review checklist in AGENTS.md | ✅ Merged |
 
 **Next up:** F.3 (Onboarding layout + Step 1) and F.4 (Static provider catalog) can start in parallel — #12 has merged.
 
