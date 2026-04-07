@@ -315,7 +315,37 @@ Never commit a `package.json` change without the updated lockfile alongside it.
 
 ---
 
-## 9. Implementation Plan
+## 9. Frontend Code Review Checklist
+
+A backend engineer's guide to reviewing Next.js PRs. Most backend instincts apply — here's how they map.
+
+### Security
+- **Open redirect** — any `router.push(param)` or `redirect(param)` where the value comes from a URL query string must be validated. Only allow paths that start with `/` and not `//` (which browsers treat as protocol-relative).
+- **Server vs client boundary** — check that secrets, tokens, and internal data are never in `"use client"` components. Anything in a client component is shipped to the browser as JS.
+- **`dangerouslySetInnerHTML`** — treat like `innerHTML`: never use with unsanitised user content.
+
+### State and data fetching
+- **Form double-submit** — buttons must be `disabled` while a request is in flight. The equivalent of backend idempotency keys.
+- **staleTime / caching** — `useQuery` with no `staleTime` refetches on every focus. Ask: is this data being fetched more often than it changes?
+- **N+1 fetches** — a list that fetches detail for each item in a `useEffect` is the frontend equivalent of an N+1 query.
+
+### Next.js specifics
+- **Server component by default** — if a component doesn't use hooks, event handlers, or browser APIs, it should be a server component (no `"use client"`). Client components increase bundle size.
+- **`useSearchParams()` needs Suspense** — any component calling `useSearchParams()` must be wrapped in `<Suspense>` or Next.js will fail the static build.
+- **Env var placement** — server-only env vars belong in `packages/auth/keys.ts` or server components only. If a secret appears in a `"use client"` file it will be in the browser bundle.
+- **Hydration mismatches** — server and client must render identically on first paint. Exceptions (like theme class from `localStorage`) require `suppressHydrationWarning` scoped to the specific element.
+
+### Resource lifecycle
+- **Singleton expensive resources** — database pools, HTTP clients, and similar should be module-level singletons. Initialising them inside a function that runs on every request (or every hot-reload) causes connection exhaustion.
+- **Middleware cost** — Next.js middleware runs on every matching request. A DB call in middleware is a DB round-trip per page load. Prefer cookie/JWT validation (no DB) in middleware; do full session hydration in route handlers or server components.
+
+### Package boundaries
+- `packages/auth/keys.ts` uses `@t3-oss/env-core` — not `env-nextjs`. Use `env-nextjs` only inside `apps/app/` where Next.js `NEXT_PUBLIC_` prefix handling is needed.
+- Each env var should be validated in exactly one place. If `BETTER_AUTH_SECRET` is in both `env.ts` and `keys.ts`, one of them is wrong.
+
+---
+
+## 11. Implementation Plan
 
 See `docs/implementation-plan.md` for the full PR sequence, parallelization diagram, and per-PR scope.
 
@@ -331,7 +361,7 @@ F.6 is the merge point of Tracks A and B — it requires both F.3 and F.5.
 
 ---
 
-## 10. Changelog
+## 12. Changelog
 
 ### 2026-04-07
 - Restructured to next-forge-inspired monorepo: `apps/app/` + `packages/auth/`
