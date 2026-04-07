@@ -6,3 +6,4 @@ coverage
 Dockerfile.dev
 .env.local
 .env*.local
+tsconfig.tsbuildinfo
