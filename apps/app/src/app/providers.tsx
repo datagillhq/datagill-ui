@@ -2,6 +2,7 @@
 
 import { makeQueryClient } from "@/lib/query-client";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "next-themes";
 import { useState } from "react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -9,5 +10,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   // while the browser reuses the same instance across renders.
   const [queryClient] = useState(makeQueryClient);
 
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  return (
+    <ThemeProvider attribute="class" defaultTheme="dark" disableTransitionOnChange>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </ThemeProvider>
+  );
 }
