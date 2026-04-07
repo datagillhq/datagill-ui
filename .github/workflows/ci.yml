@@ -46,5 +46,5 @@ jobs:
           # Dummy values so Next.js build doesn't fail on missing env vars.
           # Real validation happens at runtime via src/lib/env.ts.
           BETTER_AUTH_SECRET: ci-placeholder
-          BETTER_AUTH_URL: http://localhost:3000
+          BETTER_AUTH_URL: http://localhost:3001
           NEXT_PUBLIC_API_URL: http://localhost:8082
