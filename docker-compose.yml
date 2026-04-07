@@ -13,6 +13,8 @@ services:
 
   auth-db:
     image: postgres:16-alpine
+    # Port 5433 exposed for local DB inspection only.
+    # Remove this ports mapping before deploying to any shared environment.
     ports:
       - "5433:5432"
     environment:
