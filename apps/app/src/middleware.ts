@@ -1,6 +1,9 @@
 import { auth } from "@datagill/auth/server";
 import { type NextRequest, NextResponse } from "next/server";
 
+// pg (via @datagill/auth/server) requires the Node.js runtime.
+export const runtime = "nodejs";
+
 // Routes that do NOT require authentication.
 const PUBLIC_PREFIXES = ["/sign-in", "/sign-up", "/api/auth"];
 
