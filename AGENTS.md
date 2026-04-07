@@ -122,7 +122,23 @@ The full list of providers (name, logo, description, tags, docsLink) lives stati
 
 ---
 
-## 5. PR Rules
+## 5. Mocks Required Before Coding
+
+**Before writing any UI code for a page or component, ask the user for a mock or design reference.**
+
+Mocks are the source of truth for layout, spacing, component variants, interaction states, and copy. Do not invent layout decisions from the implementation plan alone — it describes behavior and data, not visual design.
+
+When starting a PR, ask:
+
+> "Do you have a mock or design file for [page/component]? I need it before writing any layout or styling code."
+
+If the user provides a Figma link, screenshot, or sketch — refer to it throughout the PR and call out any ambiguities before coding rather than guessing. If no mock exists yet, flag this as a blocker and do not proceed with layout code.
+
+Exception: purely structural PRs (F.0, F.1) that have no user-visible UI do not need a mock.
+
+---
+
+## 6. Testing
 
 - Max **100–150 lines** of changed code per PR — split if larger
 - All changes via branch + PR — no direct pushes to `main`

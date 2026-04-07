@@ -40,6 +40,14 @@ F.0 (Repo setup — sequential foundation)
 
 ---
 
+## Mocks First
+
+**Before writing layout or styling code for any PR, ask the user for a mock or design reference.** The implementation plan describes behavior and data — it does not define visual layout, spacing, or component variants.
+
+Exception: F.0 and F.1 have no user-visible UI and do not need a mock.
+
+---
+
 ## PR Sequence
 
 ### F.0 — Repo Setup & Agent Init
