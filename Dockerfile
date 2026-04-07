@@ -1,6 +1,9 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
+# Copy workspace manifests only — lets Docker cache this layer until deps change
 COPY package.json package-lock.json ./
+COPY apps/app/package.json ./apps/app/
+COPY packages/auth/package.json ./packages/auth/
 RUN npm ci
 
 FROM node:22-alpine AS builder
@@ -23,9 +26,9 @@ WORKDIR /app
 ENV NODE_ENV=production
 # standalone output contains only what's needed to run the server —
 # no node_modules, no source files.
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
+COPY --from=builder /app/apps/app/.next/standalone ./
+COPY --from=builder /app/apps/app/.next/static ./.next/static
+COPY --from=builder /app/apps/app/public ./public
 EXPOSE 3001
 ENV PORT=3001
 CMD ["node", "server.js"]
