@@ -7,10 +7,14 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-# Dummy env vars so Next.js build doesn't fail on missing vars.
-# Real values are injected at runtime via docker-compose or the host environment.
-ENV BETTER_AUTH_SECRET=build-placeholder
-ENV BETTER_AUTH_URL=http://localhost:3000
+# BETTER_AUTH_SECRET and BETTER_AUTH_URL must NOT be hardcoded here —
+# they are runtime values and must be injected via docker-compose env_file
+# or host environment. Hardcoding BETTER_AUTH_URL would bake the wrong
+# callback URL into the client bundle and break OAuth redirects.
+#
+# NEXT_PUBLIC_API_URL is a build-time value (inlined into the JS bundle by
+# Next.js at build time), so a placeholder is acceptable here. Override it
+# at build time in CI or your deployment pipeline if targeting a real backend.
 ENV NEXT_PUBLIC_API_URL=http://localhost:8082
 RUN npm run build
 
