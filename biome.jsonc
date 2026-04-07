@@ -27,11 +27,6 @@
     }
   },
   "files": {
-    "ignore": [
-      "node_modules",
-      ".next",
-      "out",
-      "*.generated.*"
-    ]
+    "ignore": ["node_modules", ".next", "out", "*.generated.*"]
   }
 }
