@@ -217,7 +217,37 @@ Claude in Chrome lets an agent click, type, and take screenshots of the running 
 
 ---
 
-## 7. Implementation Plan
+## 7. PR Rules
+
+- Max **100–150 lines** of changed code per PR — split if larger
+- All changes via branch + PR — no direct pushes to `main`
+- Branch prefix: `feat/`, `fix/`, `chore/`
+- All PRs use the `.github/PULL_REQUEST_TEMPLATE.md`
+
+### Before Every Push — Run This Locally
+
+CI minutes cost money. Catch failures locally before pushing:
+
+```bash
+npm run check   # Biome lint + format + tsc --noEmit
+```
+
+The pre-push Lefthook hook runs `typecheck`, `lint`, and a lockfile sync check automatically on `git push`. If any fail, the push is blocked. Fix the issue and push again — do not bypass with `--no-verify`.
+
+### Lockfile Rule — Most Common CI Failure
+
+CI uses `npm ci`, which hard-fails if `package-lock.json` is out of sync with `package.json`. **Any time you touch `package.json`:**
+
+```bash
+npm install                  # regenerates package-lock.json
+git add package-lock.json    # commit it in the same commit
+```
+
+Never commit a `package.json` change without the updated lockfile alongside it. The pre-push hook will catch this and block with a clear message before it ever hits CI.
+
+---
+
+## 8. Implementation Plan
 
 See `docs/implementation-plan.md` for the full PR sequence, parallelization diagram, and per-PR scope.
 
@@ -233,7 +263,7 @@ F.6 is the merge point of Tracks A and B — it requires both F.3 and F.5.
 
 ---
 
-## 8. Changelog
+## 9. Changelog
 
 ### 2026-04-07
 - Replaced old scope (minimal search UI) with full product plan

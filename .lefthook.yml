@@ -9,3 +9,7 @@ pre-push:
   commands:
     typecheck:
       run: npm run typecheck
+    lint:
+      run: npm run lint
+    lockfile-sync:
+      run: node scripts/check-lockfile.js
