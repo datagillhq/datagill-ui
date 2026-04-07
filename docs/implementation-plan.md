@@ -4,6 +4,30 @@ This document covers every PR needed to go from the current minimal bootstrap to
 
 ---
 
+## Progress — as of 2026-04-07
+
+| PR | Description | Status |
+|---|---|---|
+| #8 | F.0c: shadcn/ui init, Vitest + Playwright scaffolding | ✅ Merged |
+| #9 | Monorepo restructure: `apps/app/src/` + `packages/auth/` | ✅ Merged |
+| #10 | Next.js 15 CVE upgrades (11 advisories) | ✅ Merged |
+| #11 | F.1: `apiFetch`, env validation, TanStack Query | ✅ Merged |
+| #12 | F.2: BetterAuth email/password, RS256 JWT, middleware, auth pages | 🔁 In review |
+| #13 | Docs: frontend code review checklist in AGENTS.md | 🔁 In review |
+
+**Next up:** F.3 (Onboarding layout + Step 1) and F.4 (Static provider catalog) can start in parallel once #12 merges.
+
+---
+
+## Deviations from Original Plan
+
+- **Monorepo layout** — Added `packages/auth/` workspace before F.2 so `better-auth` is never imported directly from app code. All auth logic is encapsulated behind `@datagill/auth/{client,server,provider,keys}`.
+- **F.2 scope reduced** — Email/password only for MVP. Google and GitHub OAuth deferred (no client IDs yet). Invitation plugin also deferred to F.7.
+- **BetterAuth JWT verified** — `organizationId` claim works via `definePayload` on the `jwt()` plugin. RS256 + `jwksPath: "/.well-known/jwks.json"` confirmed compatible with datagill-core's validator. The blocking pre-check in F.2 is resolved.
+- **`apps/app` dev port is 3001** — not 3000 as originally planned (3000 conflicts with datagill-core locally).
+
+---
+
 ## Parallelization Overview
 
 After F.0 lands, three tracks can run independently. A team of 3–4 can execute this in parallel.
