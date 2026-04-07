@@ -1,5 +1,16 @@
-// Zod validation for auth-related env vars:
-// BETTER_AUTH_SECRET, BETTER_AUTH_URL, GOOGLE_CLIENT_ID/SECRET, GITHUB_CLIENT_ID/SECRET.
-// Implemented in F.2 alongside @t3-oss/env-nextjs setup.
+import { createEnv } from "@t3-oss/env-nextjs";
+import { z } from "zod";
 
-export {};
+export const keys = createEnv({
+  server: {
+    DATABASE_URL: z.string().url(),
+    BETTER_AUTH_SECRET: z.string().min(1),
+    BETTER_AUTH_URL: z.string().url(),
+  },
+  client: {},
+  runtimeEnv: {
+    DATABASE_URL: process.env.DATABASE_URL,
+    BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+    BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
+  },
+});

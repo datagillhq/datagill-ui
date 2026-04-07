@@ -1,7 +1,10 @@
 "use client";
 
-// Thin abstraction over better-auth's React client.
-// Import from "@datagill/auth/client" — never import from better-auth directly.
-// Implemented in F.2.
+import { organizationClient } from "better-auth/client/plugins";
+import { createAuthClient } from "better-auth/react";
 
-export {};
+export const authClient = createAuthClient({
+  plugins: [organizationClient()],
+});
+
+export const { useSession, signIn, signOut, signUp } = authClient;
