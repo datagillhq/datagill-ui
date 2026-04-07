@@ -285,6 +285,41 @@ Four visual variants driven by `GET /v1/integrations` × provider catalog:
 
 ---
 
+## Testing Per PR
+
+Every PR must include tests. The table below specifies what kind of tests belong in each PR. See `AGENTS.md §6` for the full testing philosophy and tooling setup.
+
+| PR | Unit (Vitest) | Component (@testing-library) | E2E (Playwright) | Visual (Claude in Chrome) |
+|---|---|---|---|---|
+| F.0 | — | — | — | — |
+| F.1 | `api.ts` error mapping, request construction | — | — | — |
+| F.2 | — | Sign-up form validation states | Sign-up → sign-in flow | Screenshot sign-up + sign-in pages |
+| F.3 | — | Onboarding sidebar step states | Navigate through Step 1, create org | Screenshot sidebar progress |
+| F.4 | Catalog filter logic, Coming Soon derivation | — | — | — |
+| F.5 | — | Modal: all 4 states × all 3 error codes, masked key edit behavior | — | Screenshot each modal state |
+| F.6 | — | Provider grid: connected vs unconnected states, footer count | Connect integration in onboarding end-to-end | Screenshot provider grid + connected card state |
+| F.7 | — | Invite email tag input | Complete full onboarding wizard | Screenshot verification screen + invite step |
+| F.8 | — | All 4 card variants render correctly | — | Screenshot each card variant |
+| F.9 | — | Settings page: skeleton → loaded state | Load settings page, connect a new integration | Screenshot merged catalog |
+| F.10 | — | Toggle revert on error | Pause/resume toggle; disconnect with confirmation | Screenshot optimistic toggle flip |
+| F.11 | Date range formatting, filter AND logic | Filter bar: date picker, dropdowns | Dashboard loads, all 4 skeletons visible | Screenshot dashboard shell + filter bar |
+| F.12 | — | Audit log: empty state, pagination controls | Paginate audit log; change date range re-fetches | Screenshot audit log table |
+| F.13 | — | Top teams: empty state | Top teams loads with real data | Screenshot top teams grid |
+| F.14 | Velocity time formatter (m/h/days) | Launched wins: partial badge; velocity: `sampleSize < 3` disclaimer | Full dashboard with all 4 sections populated | Screenshot complete dashboard |
+
+### F.0 Testing Setup
+
+F.0 must scaffold the test infrastructure so all subsequent PRs can immediately write tests:
+
+- Install and configure **Vitest** with jsdom environment
+- Install **@testing-library/react** + `@testing-library/user-event`
+- Install **Playwright**, add `playwright.config.ts` pointing at `localhost:3000`
+- Add `npm run test`, `npm run test:e2e`, `npm run test:e2e:ui` scripts
+- Add Playwright to CI (`ci.yml`): start dev server, run `test:e2e`
+- Add `tests/` directory with a placeholder test so CI doesn't fail on a empty suite
+
+---
+
 ## Blocking Dependencies Summary
 
 | Blocker | Blocks |

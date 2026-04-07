@@ -133,7 +133,75 @@ The full list of providers (name, logo, description, tags, docsLink) lives stati
 
 ---
 
-## 6. Implementation Plan
+## 6. Testing
+
+### Tools
+
+| Tool | Purpose |
+|---|---|
+| Vitest | Unit tests — pure functions, data transforms, error code mapping |
+| @testing-library/react | Component tests — render, interact, assert on DOM |
+| Playwright | E2E tests — full user journeys in a real browser, runs in CI |
+| Claude in Chrome | Visual verification during development — agents take screenshots and interact with `localhost` |
+
+### What to Test at Each Layer
+
+**Unit tests (Vitest)** — fast, no DOM needed:
+- `src/lib/api.ts` — error code mapping, request construction
+- `src/lib/providers.ts` — catalog filtering, Coming Soon logic
+- Time formatting utilities (velocity "Xm / Xh Ym / X days")
+- Any pure data transform
+
+**Component tests (@testing-library/react)** — render in jsdom:
+- `IntegrationModal` — all four states (idle, saving, success, error), each error code
+- `ProviderCard` — all four visual variants
+- Dashboard sections — empty states, loading skeletons, data display
+- Filter dropdowns — AND logic when both team + actor are active
+
+**E2E tests (Playwright)** — run against the real dev server:
+- Sign-up → onboarding → dashboard happy path
+- Integration connect flow (modal open → verify → save → card updates)
+- Toggle pause/resume (optimistic update + revert on error)
+- Disconnect with confirmation dialog
+- Dashboard date range filter causes all sections to re-fetch
+- Audit log pagination
+
+### Running Tests
+
+```bash
+npm run test          # Vitest unit + component tests
+npm run test:e2e      # Playwright E2E (requires dev server running)
+npm run test:e2e:ui   # Playwright with UI mode for debugging
+```
+
+CI runs `test` and `test:e2e` on every PR.
+
+### Visual Verification with Claude in Chrome
+
+Agents working on UI changes should use Claude in Chrome to visually verify their work before opening a PR:
+
+```bash
+# Start dev server in one terminal
+npm run dev
+
+# In Claude Code, enable Chrome and ask it to verify
+# Example: "Open localhost:3000/onboarding, go through step 2,
+# connect a LaunchDarkly integration, and screenshot the result"
+```
+
+Claude in Chrome lets an agent click, type, and take screenshots of the running app — use this to catch layout issues, broken states, and interaction bugs that tests won't catch.
+
+### Testing Philosophy
+
+- All meaningful code paths must have a test
+- No redundant tests — don't test the same thing twice at different layers
+- Component tests cover state machines exhaustively (every modal state, every card variant)
+- E2E tests cover user journeys, not implementation details
+- Do not mock the DataGill API in E2E tests — use a test environment or MSW for deterministic responses
+
+---
+
+## 7. Implementation Plan
 
 See `docs/implementation-plan.md` for the full PR sequence, parallelization diagram, and per-PR scope.
 
@@ -149,7 +217,7 @@ F.6 is the merge point of Tracks A and B — it requires both F.3 and F.5.
 
 ---
 
-## 7. Changelog
+## 8. Changelog
 
 ### 2026-04-07
 - Replaced old scope (minimal search UI) with full product plan
