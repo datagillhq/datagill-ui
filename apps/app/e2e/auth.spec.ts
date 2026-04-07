@@ -1,20 +1,3 @@
-/**
- * F.2 E2E: BetterAuth → datagill-core authentication + org scoping
- *
- * Flow:
- *   1. Sign up a new user via the BetterAuth API directly (no UI overhead)
- *   2. Sign in to obtain a session
- *   3. Create an organisation and set it as active
- *   4. Request a JWT via BetterAuth's /api/auth/token endpoint
- *   5. Call datagill-core's search/integration endpoint with the JWT
- *   6. Assert the response is authenticated (not 401) and the org is scoped correctly
- *
- * Prerequisites (must be running locally):
- *   - Next.js dev server:  npm run dev -w apps/app  (port 3001)
- *   - datagill-core:       make run-search           (port 8082)
- *   - Postgres:            accessible via DATABASE_URL
- */
-
 import { randomUUID } from "node:crypto";
 import { expect, test } from "@playwright/test";
 
