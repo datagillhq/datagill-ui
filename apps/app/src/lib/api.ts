@@ -20,13 +20,21 @@ export class ApiError extends Error {
   }
 }
 
+// Default timeout in milliseconds. Overridable per-call via options.timeoutMs.
+// Protects against the backend connection closing abruptly and leaving the
+// browser hanging indefinitely.
+const DEFAULT_TIMEOUT_MS = 10_000;
+
 // Token getter is injected so this module stays testable without a real auth session.
-// In production, pass () => session?.token ?? null from the component/hook.
+// In production, pass the token from the BetterAuth session at the call site.
 export async function apiFetch<T>(
   path: string,
-  options: RequestInit & { token?: string | null } = {}
-): Promise<T> {
-  const { token, ...fetchOptions } = options;
+  options: RequestInit & { token?: string | null; timeoutMs?: number } = {}
+): Promise<T | undefined> {
+  const { token, timeoutMs = DEFAULT_TIMEOUT_MS, ...fetchOptions } = options;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   const headers = new Headers(fetchOptions.headers);
   headers.set("Content-Type", "application/json");
@@ -34,10 +42,16 @@ export async function apiFetch<T>(
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const response = await fetch(`${env.NEXT_PUBLIC_API_URL}${path}`, {
-    ...fetchOptions,
-    headers,
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${env.NEXT_PUBLIC_API_URL}${path}`, {
+      ...fetchOptions,
+      headers,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timer);
+  }
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
@@ -45,9 +59,10 @@ export async function apiFetch<T>(
     throw new ApiError(code, response.status);
   }
 
-  // 204 No Content — return undefined cast to T
+  // 204 No Content — caller receives undefined. Use apiFetch<void> for DELETE
+  // calls and discard the return value.
   if (response.status === 204) {
-    return undefined as T;
+    return undefined;
   }
 
   return response.json() as Promise<T>;

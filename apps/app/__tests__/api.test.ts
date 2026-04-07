@@ -1,7 +1,6 @@
 import { ApiError, apiFetch } from "@/lib/api";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mock env so tests don't require real env vars
 vi.mock("@/lib/env", () => ({
   env: { NEXT_PUBLIC_API_URL: "http://localhost:8082" },
 }));
@@ -16,11 +15,12 @@ function mockFetch(status: number, body: unknown) {
 }
 
 beforeEach(() => {
-  vi.restoreAllMocks();
+  vi.useFakeTimers();
 });
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.useRealTimers();
 });
 
 describe("apiFetch", () => {
@@ -44,6 +44,14 @@ describe("apiFetch", () => {
     const [, options] = spy.mock.calls[0];
     const headers = new Headers(options?.headers);
     expect(headers.get("Authorization")).toBeNull();
+  });
+
+  it("always sets Content-Type: application/json", async () => {
+    const spy = mockFetch(200, {});
+    await apiFetch("/v1/integrations");
+    const [, options] = spy.mock.calls[0];
+    const headers = new Headers(options?.headers);
+    expect(headers.get("Content-Type")).toBe("application/json");
   });
 
   it("returns undefined on 204 No Content", async () => {
@@ -91,6 +99,22 @@ describe("apiFetch", () => {
     await apiFetch("/v1/integrations");
     const [url] = spy.mock.calls[0];
     expect(url).toBe("http://localhost:8082/v1/integrations");
+  });
+
+  it("aborts and throws when the request exceeds timeoutMs", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementationOnce(
+      (_url, options) =>
+        new Promise((_resolve, reject) => {
+          // Simulate the browser aborting the request when the signal fires
+          options?.signal?.addEventListener("abort", () =>
+            reject(new DOMException("The operation was aborted.", "AbortError"))
+          );
+        })
+    );
+
+    const fetchPromise = apiFetch("/v1/integrations", { timeoutMs: 5_000 });
+    vi.advanceTimersByTime(5_000);
+    await expect(fetchPromise).rejects.toMatchObject({ name: "AbortError" });
   });
 });
 
