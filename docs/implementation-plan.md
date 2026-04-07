@@ -12,10 +12,10 @@ This document covers every PR needed to go from the current minimal bootstrap to
 | #9 | Monorepo restructure: `apps/app/src/` + `packages/auth/` | ✅ Merged |
 | #10 | Next.js 15 CVE upgrades (11 advisories) | ✅ Merged |
 | #11 | F.1: `apiFetch`, env validation, TanStack Query | ✅ Merged |
-| #12 | F.2: BetterAuth email/password, RS256 JWT, middleware, auth pages | 🔁 In review |
+| #12 | F.2: BetterAuth email/password, RS256 JWT, middleware, auth pages | ✅ Merged |
 | #13 | Docs: frontend code review checklist in AGENTS.md | 🔁 In review |
 
-**Next up:** F.3 (Onboarding layout + Step 1) and F.4 (Static provider catalog) can start in parallel once #12 merges.
+**Next up:** F.3 (Onboarding layout + Step 1) and F.4 (Static provider catalog) can start in parallel — #12 has merged.
 
 ---
 
