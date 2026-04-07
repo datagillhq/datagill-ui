@@ -234,6 +234,19 @@ npm run check   # Biome lint + format + tsc --noEmit
 
 The pre-push Lefthook hook runs `typecheck`, `lint`, and a lockfile sync check automatically on `git push`. If any fail, the push is blocked. Fix the issue and push again — do not bypass with `--no-verify`.
 
+### Biome Fixes Must Be Committed
+
+`npm run check` writes fixes to disk but does not stage them. CI checks out from git — if fixed files are not committed, CI sees the originals and fails even though your local check passed.
+
+After running `npm run check`, always check for unstaged changes:
+
+```bash
+git diff --name-only   # shows files Biome modified but didn't stage
+git add -p             # review and stage the Biome fixes
+```
+
+This is especially important when introducing Biome to existing files for the first time.
+
 ### Lockfile Rule — Most Common CI Failure
 
 CI uses `npm ci`, which hard-fails if `package-lock.json` is out of sync with `package.json`. **Any time you touch `package.json`:**
