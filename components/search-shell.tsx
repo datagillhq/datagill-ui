@@ -1,6 +1,6 @@
-import { fetchSearchResults } from "@/lib/search";
-import { Card, CardContent } from "@/components/ui/card";
 import { SearchForm } from "@/components/search-form";
+import { Card, CardContent } from "@/components/ui/card";
+import { fetchSearchResults } from "@/lib/search";
 
 type SearchShellProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
@@ -16,7 +16,7 @@ function formatDate(raw: string) {
 export async function SearchShell({ searchParams }: SearchShellProps) {
   const resolvedParams = (await searchParams) ?? {};
   const rawQuery = resolvedParams.q;
-  const query = Array.isArray(rawQuery) ? rawQuery[0] ?? "" : rawQuery ?? "";
+  const query = Array.isArray(rawQuery) ? (rawQuery[0] ?? "") : (rawQuery ?? "");
   const response = await fetchSearchResults(query);
 
   return (
@@ -26,9 +26,9 @@ export async function SearchShell({ searchParams }: SearchShellProps) {
           <span className="eyebrow">DataGill Search UI Bootstrap</span>
           <h1 className="headline">Feature-flag search, with room to grow.</h1>
           <p className="subhead">
-            This first screen is intentionally small: one search flow, one backend
-            service, and enough structure to start building real product surfaces
-            without committing too early to heavier frontend architecture.
+            This first screen is intentionally small: one search flow, one backend service, and
+            enough structure to start building real product surfaces without committing too early to
+            heavier frontend architecture.
           </p>
           <SearchForm />
           <div className="stats-grid">
@@ -52,9 +52,9 @@ export async function SearchShell({ searchParams }: SearchShellProps) {
             <CardContent>
               <h2 className="card-title">Search results</h2>
               <p className="card-copy">
-                The page calls the Go search service through server-side fetches.
-                If the backend is offline, the UI falls back to a single demo
-                record so the frontend still renders during setup.
+                The page calls the Go search service through server-side fetches. If the backend is
+                offline, the UI falls back to a single demo record so the frontend still renders
+                during setup.
               </p>
               <div className="results" style={{ marginTop: 18 }}>
                 {response.results.map((result) => (
@@ -86,8 +86,8 @@ export async function SearchShell({ searchParams }: SearchShellProps) {
                   Search service remains read-only and does not use Temporal.
                 </p>
                 <p className="card-copy">
-                  UI uses the App Router and lightweight local components modeled
-                  after shadcn structure so we can swap in generated components later.
+                  UI uses the App Router and lightweight local components modeled after shadcn
+                  structure so we can swap in generated components later.
                 </p>
                 <p className="card-copy">
                   The next backend step is replacing the in-memory repository with a
