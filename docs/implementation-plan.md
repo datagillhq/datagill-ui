@@ -4,7 +4,7 @@ This document covers every PR needed to go from the current minimal bootstrap to
 
 ---
 
-## Progress — as of 2026-04-07
+## Progress — as of 2026-04-08
 
 | PR | Description | Status |
 |---|---|---|
@@ -16,8 +16,9 @@ This document covers every PR needed to go from the current minimal bootstrap to
 | #13 | Docs: frontend code review checklist in AGENTS.md | ✅ Merged |
 | #17 | F.4: Static provider catalog + useSupportedProviders hook | ✅ Merged |
 | #19 | F.3: Onboarding layout + Step 1 (Create Org) | ✅ Merged |
+| #20 | F.5: IntegrationModal — API key connect/edit dialog | ✅ Merged |
 
-**Next up:** F.5 (Integration Modal) — unblocked. F.6 (Onboarding Step 2) depends on F.5.
+**Next up:** F.6 (Onboarding Step 2) — both F.3 and F.5 are merged, unblocked.
 
 ---
 
