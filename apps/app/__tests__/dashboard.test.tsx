@@ -1,10 +1,14 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/hooks/use-analytics", () => ({
   useLaunchedWins: vi.fn(),
   useTopTeams: vi.fn(),
   useVelocity: vi.fn(),
+  makeDateRange: (_days: number) => ({
+    from: "2026-04-01",
+    to: "2026-04-08",
+  }),
 }));
 
 vi.mock("next/link", () => ({
@@ -45,8 +49,9 @@ function setup({
 describe("DashboardPage", () => {
   it("renders the header", () => {
     setup({});
-    expect(screen.getByText("Executive Impact")).toBeInTheDocument();
+    expect(screen.getByText("Overview")).toBeInTheDocument();
     expect(screen.getByText("Live Audit Tracking")).toBeInTheDocument();
+    expect(screen.getByText("Last 7 days")).toBeInTheDocument();
   });
 
   it("shows empty state for launched wins when no data", () => {
@@ -98,5 +103,13 @@ describe("DashboardPage", () => {
   it("shows not enough data when velocity is empty", () => {
     setup({ velocity: {} });
     expect(screen.getByText("Not enough data yet.")).toBeInTheDocument();
+  });
+
+  it("opens date range dropdown and switches range", async () => {
+    setup({});
+    fireEvent.click(screen.getByRole("button", { name: /last 7 days/i }));
+    expect(screen.getByRole("button", { name: /last 30 days/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /last 30 days/i }));
+    expect(screen.queryByRole("button", { name: /last 90 days/i })).not.toBeInTheDocument();
   });
 });

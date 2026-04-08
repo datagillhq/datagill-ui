@@ -3,11 +3,19 @@
 import {
   type LaunchedFlag,
   type TeamActivity,
+  makeDateRange,
   useLaunchedWins,
   useTopTeams,
   useVelocity,
 } from "@/hooks/use-analytics";
-import { ExternalLink, Flag, Users, Zap } from "lucide-react";
+import { ChevronDown, ExternalLink, Flag, Users, Zap } from "lucide-react";
+import { useState } from "react";
+
+const DATE_PRESETS = [
+  { label: "Last 7 days", days: 7 },
+  { label: "Last 30 days", days: 30 },
+  { label: "Last 90 days", days: 90 },
+] as const;
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -188,24 +196,65 @@ function VelocityCard({ ms, sampleSize }: { ms?: number; sampleSize?: number }) 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
-  const { data: flags, isLoading: loadingFlags } = useLaunchedWins();
-  const { data: teams, isLoading: loadingTeams } = useTopTeams();
-  const { data: velocity } = useVelocity();
+  const [days, setDays] = useState<7 | 30 | 90>(7);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const range = makeDateRange(days);
+
+  const { data: flags, isLoading: loadingFlags } = useLaunchedWins(range);
+  const { data: teams, isLoading: loadingTeams } = useTopTeams(range);
+  const { data: velocity } = useVelocity(range);
+
+  const selectedLabel = DATE_PRESETS.find((p) => p.days === days)?.label ?? "Last 7 days";
 
   return (
     <div className="px-10 py-8">
       {/* Header */}
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Executive Impact</h1>
+          <h1 className="text-3xl font-bold text-foreground">Overview</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Cross-functional visibility and deployment velocity.
           </p>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-600/10 px-3 py-1 text-xs font-medium text-indigo-400">
-          <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
-          Live Audit Tracking
-        </span>
+        <div className="flex items-center gap-3">
+          {/* Date range picker */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setDropdownOpen((o) => !o)}
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-foreground hover:bg-muted"
+            >
+              {selectedLabel}
+              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+            </button>
+            {dropdownOpen && (
+              <div className="absolute right-0 top-full z-10 mt-1 w-40 rounded-lg border border-border bg-card py-1 shadow-lg">
+                {DATE_PRESETS.map((preset) => (
+                  <button
+                    key={preset.days}
+                    type="button"
+                    onClick={() => {
+                      setDays(preset.days);
+                      setDropdownOpen(false);
+                    }}
+                    className={`flex w-full items-center justify-between px-3 py-2 text-sm hover:bg-muted ${
+                      days === preset.days ? "text-indigo-400" : "text-foreground"
+                    }`}
+                  >
+                    {preset.label}
+                    {days === preset.days && (
+                      <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-600/10 px-3 py-1 text-xs font-medium text-indigo-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
+            Live Audit Tracking
+          </span>
+        </div>
       </div>
 
       {/* Launched Wins */}

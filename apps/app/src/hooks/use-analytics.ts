@@ -24,49 +24,53 @@ export type VelocityData = {
   sampleSize?: number;
 };
 
-function useDates() {
+export type DateRange = { from: string; to: string };
+
+export function makeDateRange(days: number): DateRange {
   const to = new Date().toISOString().split("T")[0];
-  const from = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+  const from = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
   return { from, to };
 }
 
-export function useTopTeams() {
+export function useTopTeams(range: DateRange) {
   const { data: session } = useSession();
   const token = session?.session?.token ?? null;
-  const { from, to } = useDates();
 
   return useQuery({
-    queryKey: ["top-teams", { from, to }, token],
+    queryKey: ["top-teams", range, token],
     queryFn: () =>
-      apiFetch<TeamActivity[]>(`/v1/analytics?metric=top_teams&from=${from}&to=${to}`, { token }),
-    staleTime: 60_000,
-  });
-}
-
-export function useLaunchedWins() {
-  const { data: session } = useSession();
-  const token = session?.session?.token ?? null;
-  const { from, to } = useDates();
-
-  return useQuery({
-    queryKey: ["launched-wins", { from, to }, token],
-    queryFn: () =>
-      apiFetch<LaunchedFlag[]>(`/v1/analytics?metric=launched_wins&from=${from}&to=${to}`, {
+      apiFetch<TeamActivity[]>(`/v1/analytics?metric=top_teams&from=${range.from}&to=${range.to}`, {
         token,
       }),
     staleTime: 60_000,
   });
 }
 
-export function useVelocity() {
+export function useLaunchedWins(range: DateRange) {
   const { data: session } = useSession();
   const token = session?.session?.token ?? null;
-  const { from, to } = useDates();
 
   return useQuery({
-    queryKey: ["velocity", { from, to }, token],
+    queryKey: ["launched-wins", range, token],
     queryFn: () =>
-      apiFetch<VelocityData>(`/v1/analytics?metric=velocity&from=${from}&to=${to}`, { token }),
+      apiFetch<LaunchedFlag[]>(
+        `/v1/analytics?metric=launched_wins&from=${range.from}&to=${range.to}`,
+        { token }
+      ),
+    staleTime: 60_000,
+  });
+}
+
+export function useVelocity(range: DateRange) {
+  const { data: session } = useSession();
+  const token = session?.session?.token ?? null;
+
+  return useQuery({
+    queryKey: ["velocity", range, token],
+    queryFn: () =>
+      apiFetch<VelocityData>(`/v1/analytics?metric=velocity&from=${range.from}&to=${range.to}`, {
+        token,
+      }),
     staleTime: 60_000,
   });
 }
