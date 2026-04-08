@@ -105,8 +105,8 @@ export function IntegrationModal({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onCancel()}>
-      <DialogContent showCloseButton className="max-w-2xl p-0 overflow-hidden">
-        <div className="flex">
+      <DialogContent showCloseButton className="sm:max-w-2xl p-0 overflow-hidden">
+        <div className="flex min-h-[420px]">
           {/* Left panel — connection form */}
           <div className="flex-1 p-8">
             {/* Provider badge */}
@@ -199,7 +199,7 @@ export function IntegrationModal({
           </div>
 
           {/* Right panel — security info */}
-          <div className="w-52 shrink-0 border-l border-border bg-muted/30 p-6 flex flex-col gap-5">
+          <div className="w-64 shrink-0 border-l border-border bg-muted/30 p-6 flex flex-col gap-5">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Data Sovereignty
             </p>
