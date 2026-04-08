@@ -4,7 +4,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@datagill/auth/client";
-import { ArrowLeft, ArrowRight, CheckCircle, Pencil, Shield } from "lucide-react";
+import { ArrowLeft, ArrowRight, Pencil, Shield } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -40,14 +40,13 @@ export default function OnboardingStep1() {
     if (!orgName.trim()) return;
     setSaving(true);
     setError(null);
-    try {
-      await authClient.organization.create({ name: orgName, slug });
-      router.push("/onboarding/step-2");
-    } catch {
-      setError("Failed to create organization. Please try again.");
-    } finally {
-      setSaving(false);
+    const { error } = await authClient.organization.create({ name: orgName, slug });
+    setSaving(false);
+    if (error) {
+      setError("This workspace URL is already taken or invalid. Please try another.");
+      return;
     }
+    router.push("/onboarding/step-2");
   }
 
   return (
@@ -103,13 +102,6 @@ export default function OnboardingStep1() {
             />
           </div>
         </div>
-
-        {slug && (
-          <p className="mt-1.5 flex items-center gap-1 text-xs text-indigo-400">
-            <CheckCircle className="h-3.5 w-3.5" />
-            Slug is available
-          </p>
-        )}
 
         {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
       </form>
