@@ -53,12 +53,12 @@ export default function OnboardingStep1() {
   return (
     <div className="flex flex-1 flex-col px-16 py-12">
       {/* Step badge */}
-      <span className="mb-6 inline-flex w-fit items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-700">
+      <span className="mb-6 inline-flex w-fit items-center rounded-full bg-indigo-600/10 px-3 py-1 text-xs font-medium text-indigo-400">
         STEP 1 OF 4
       </span>
 
-      <h1 className="mb-2 text-4xl font-bold text-gray-900">Create your organization</h1>
-      <p className="mb-10 max-w-md text-gray-500">
+      <h1 className="mb-2 text-4xl font-bold text-foreground">Create your organization</h1>
+      <p className="mb-10 max-w-md text-muted-foreground">
         Set up your workspace to start managing data pipelines and team integrations across your
         enterprise infrastructure.
       </p>
@@ -67,29 +67,32 @@ export default function OnboardingStep1() {
       <form
         id="org-form"
         onSubmit={handleSubmit}
-        className="mb-10 w-full max-w-xl rounded-xl bg-white p-8 shadow-sm"
+        className="mb-10 w-full max-w-xl rounded-xl bg-card p-8 shadow-sm"
       >
         <div className="mb-6">
-          <Label className="mb-2 block text-sm font-medium text-gray-700">Organization Name</Label>
+          <Label className="mb-2 block text-sm font-medium text-foreground">
+            Organization Name
+          </Label>
           <div className="relative">
             <Input
+              type="text"
               value={orgName}
               onChange={(e) => handleOrgNameChange(e.target.value)}
               placeholder="Acme Corp"
               className="pr-9"
               required
             />
-            <Pencil className="absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+            <Pencil className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           </div>
-          <p className="mt-1.5 text-xs text-gray-400">
+          <p className="mt-1.5 text-xs text-muted-foreground">
             This will be your workspace's display name.
           </p>
         </div>
 
         <div className="mb-2">
-          <Label className="mb-2 block text-sm font-medium text-gray-700">Workspace Slug</Label>
-          <div className="flex overflow-hidden rounded-md border border-gray-200">
-            <span className="flex items-center bg-gray-100 px-3 text-sm text-gray-400 select-none">
+          <Label className="mb-2 block text-sm font-medium text-foreground">Workspace Slug</Label>
+          <div className="flex overflow-hidden rounded-md border border-border">
+            <span className="flex items-center bg-muted px-3 text-sm text-muted-foreground select-none">
               datagill.com/
             </span>
             <Input
@@ -102,13 +105,13 @@ export default function OnboardingStep1() {
         </div>
 
         {slug && (
-          <p className="mt-1.5 flex items-center gap-1 text-xs text-indigo-600">
+          <p className="mt-1.5 flex items-center gap-1 text-xs text-indigo-400">
             <CheckCircle className="h-3.5 w-3.5" />
             Slug is available
           </p>
         )}
 
-        {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
+        {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
       </form>
 
       {/* Actions */}
@@ -121,7 +124,7 @@ export default function OnboardingStep1() {
           type="submit"
           form="org-form"
           disabled={!orgName.trim() || saving}
-          className="bg-indigo-600 hover:bg-indigo-700"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white"
         >
           {saving ? "Creating…" : "Create & Continue"}
           <ArrowRight className="ml-2 h-4 w-4" />
@@ -130,29 +133,29 @@ export default function OnboardingStep1() {
 
       {/* Social proof */}
       <div className="mt-16 flex w-full max-w-xl gap-6">
-        <div className="flex-1 rounded-xl bg-white p-5 shadow-sm">
+        <div className="flex-1 rounded-xl bg-card p-5 shadow-sm">
           <div className="mb-3 flex -space-x-2">
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="h-8 w-8 rounded-full border-2 border-white bg-indigo-200 text-xs font-medium"
+                className="h-8 w-8 rounded-full border-2 border-card bg-indigo-900 text-xs font-medium"
               />
             ))}
           </div>
-          <p className="mb-2 text-sm italic text-gray-600">
+          <p className="mb-2 text-sm italic text-muted-foreground">
             "DataGill transformed how we sync our multi-cloud infrastructure in minutes."
           </p>
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Sarah Chen, CTO at TechFlow
           </p>
         </div>
 
-        <div className="flex-1 rounded-xl bg-white p-5 shadow-sm">
-          <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100">
-            <Shield className="h-4 w-4 text-indigo-600" />
+        <div className="flex-1 rounded-xl bg-card p-5 shadow-sm">
+          <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600/10">
+            <Shield className="h-4 w-4 text-indigo-400" />
           </div>
-          <p className="mb-2 text-sm font-semibold text-gray-800">Enterprise Security</p>
-          <p className="text-xs text-gray-500">
+          <p className="mb-2 text-sm font-semibold text-foreground">Enterprise Security</p>
+          <p className="text-xs text-muted-foreground">
             Your organization data is protected by AES-256 encryption and SOC2 compliant protocols
             from the moment you click create.
           </p>
