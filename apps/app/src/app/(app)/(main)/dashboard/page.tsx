@@ -216,44 +216,38 @@ export default function DashboardPage() {
             Cross-functional visibility and deployment velocity.
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          {/* Date range picker */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setDropdownOpen((o) => !o)}
-              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-foreground hover:bg-muted"
-            >
-              {selectedLabel}
-              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-            </button>
-            {dropdownOpen && (
-              <div className="absolute right-0 top-full z-10 mt-1 w-40 rounded-lg border border-border bg-card py-1 shadow-lg">
-                {DATE_PRESETS.map((preset) => (
-                  <button
-                    key={preset.days}
-                    type="button"
-                    onClick={() => {
-                      setDays(preset.days);
-                      setDropdownOpen(false);
-                    }}
-                    className={`flex w-full items-center justify-between px-3 py-2 text-sm hover:bg-muted ${
-                      days === preset.days ? "text-indigo-400" : "text-foreground"
-                    }`}
-                  >
-                    {preset.label}
-                    {days === preset.days && (
-                      <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-600/10 px-3 py-1 text-xs font-medium text-indigo-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
-            Live Audit Tracking
-          </span>
+        {/* Date range picker */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setDropdownOpen((o) => !o)}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            {selectedLabel}
+            <ChevronDown className="h-3 w-3" />
+          </button>
+          {dropdownOpen && (
+            <div className="absolute right-0 top-full z-10 mt-1 w-36 rounded-lg border border-border bg-card py-1 shadow-lg">
+              {DATE_PRESETS.map((preset) => (
+                <button
+                  key={preset.days}
+                  type="button"
+                  onClick={() => {
+                    setDays(preset.days);
+                    setDropdownOpen(false);
+                  }}
+                  className={`flex w-full items-center justify-between px-3 py-2 text-xs hover:bg-muted ${
+                    days === preset.days ? "text-indigo-400" : "text-foreground"
+                  }`}
+                >
+                  {preset.label}
+                  {days === preset.days && (
+                    <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

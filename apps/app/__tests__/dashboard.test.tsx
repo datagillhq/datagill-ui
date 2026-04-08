@@ -50,7 +50,6 @@ describe("DashboardPage", () => {
   it("renders the header", () => {
     setup({});
     expect(screen.getByText("Overview")).toBeInTheDocument();
-    expect(screen.getByText("Live Audit Tracking")).toBeInTheDocument();
     expect(screen.getByText("Last 7 days")).toBeInTheDocument();
   });
 
