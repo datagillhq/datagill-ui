@@ -140,29 +140,33 @@ function TopTeamsSection({ teams }: { teams?: TeamActivity[] }) {
           Top Teams
         </h2>
       </div>
-      {teams && teams.length > 0 ? (
-        <div className="grid grid-cols-2 gap-3">
-          {teams.slice(0, 4).map((team) => (
-            <div
-              key={team.name}
-              className="flex items-center justify-between rounded-xl border border-border bg-card px-4 py-3"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600/10">
-                  <Users className="h-4 w-4 text-indigo-400" />
+      <div className="rounded-xl border border-border bg-card p-4">
+        {teams && teams.length > 0 ? (
+          <div className="grid grid-cols-2 gap-3">
+            {teams.slice(0, 4).map((team) => (
+              <div
+                key={team.name}
+                className="flex items-center justify-between rounded-lg border border-border px-4 py-3"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600/10">
+                    <Users className="h-4 w-4 text-indigo-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{team.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {team.memberCount} Active Members
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-foreground">{team.name}</p>
-                  <p className="text-xs text-muted-foreground">{team.memberCount} Active Members</p>
-                </div>
+                <span className="text-lg font-bold text-indigo-400">{team.activityCount}</span>
               </div>
-              <span className="text-lg font-bold text-indigo-400">{team.activityCount}</span>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-sm text-muted-foreground">No team activity in this period.</p>
-      )}
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">No team activity in this period.</p>
+        )}
+      </div>
     </section>
   );
 }
