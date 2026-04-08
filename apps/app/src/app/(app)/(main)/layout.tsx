@@ -17,8 +17,11 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const { data: session } = authClient.useSession();
 
   async function handleSignOut() {
-    await authClient.signOut();
-    router.push("/sign-in");
+    try {
+      await authClient.signOut();
+    } finally {
+      router.push("/sign-in");
+    }
   }
 
   const initials = session?.user?.name
@@ -84,7 +87,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <div className="flex flex-1 flex-col">
         {/* Top bar */}
         <header className="flex h-14 items-center justify-end gap-3 border-b border-border px-6">
-          <Link href="/settings" className="text-muted-foreground hover:text-foreground">
+          <Link
+            href="/settings/integrations"
+            className="text-muted-foreground hover:text-foreground"
+          >
             <Settings className="h-4 w-4" />
           </Link>
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600/20 text-xs font-semibold text-indigo-400">

@@ -9,7 +9,7 @@ import {
   useVelocity,
 } from "@/hooks/use-analytics";
 import { ChevronDown, ExternalLink, Flag, Users, Zap } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const DATE_PRESETS = [
   { label: "Last 7 days", days: 7 },
@@ -203,9 +203,21 @@ export default function DashboardPage() {
 
   const { data: flags, isLoading: loadingFlags } = useLaunchedWins(range);
   const { data: teams, isLoading: loadingTeams } = useTopTeams(range);
-  const { data: velocity } = useVelocity(range);
+  const { data: velocity, isLoading: loadingVelocity } = useVelocity(range);
 
   const selectedLabel = DATE_PRESETS.find((p) => p.days === days)?.label ?? "Last 7 days";
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [dropdownOpen]);
 
   return (
     <div className="px-10 py-8">
@@ -218,7 +230,7 @@ export default function DashboardPage() {
           </p>
         </div>
         {/* Date range picker */}
-        <div className="relative">
+        <div className="relative" ref={dropdownRef}>
           <button
             type="button"
             onClick={() => setDropdownOpen((o) => !o)}
@@ -266,7 +278,11 @@ export default function DashboardPage() {
         ) : (
           <TopTeamsSection teams={teams ?? []} />
         )}
-        <VelocityCard ms={velocity?.averageMs} sampleSize={velocity?.sampleSize} />
+        {loadingVelocity ? (
+          <div className="h-full animate-pulse rounded-xl bg-card" />
+        ) : (
+          <VelocityCard ms={velocity?.averageMs} sampleSize={velocity?.sampleSize} />
+        )}
       </div>
     </div>
   );

@@ -38,6 +38,7 @@ export function useTopTeams(range: DateRange) {
 
   return useQuery({
     queryKey: ["top-teams", range, token],
+    enabled: !!token,
     queryFn: () =>
       apiFetch<TeamActivity[]>(`/v1/analytics?metric=top_teams&from=${range.from}&to=${range.to}`, {
         token,
@@ -52,6 +53,7 @@ export function useLaunchedWins(range: DateRange) {
 
   return useQuery({
     queryKey: ["launched-wins", range, token],
+    enabled: !!token,
     queryFn: () =>
       apiFetch<LaunchedFlag[]>(
         `/v1/analytics?metric=launched_wins&from=${range.from}&to=${range.to}`,
@@ -67,6 +69,7 @@ export function useVelocity(range: DateRange) {
 
   return useQuery({
     queryKey: ["velocity", range, token],
+    enabled: !!token,
     queryFn: () =>
       apiFetch<VelocityData>(`/v1/analytics?metric=velocity&from=${range.from}&to=${range.to}`, {
         token,
