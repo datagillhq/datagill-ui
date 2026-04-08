@@ -33,7 +33,7 @@ export function useToggleIntegration() {
       apiFetch<ConnectedIntegration>(`/v1/integrations/${id}`, {
         token,
         method: "PATCH",
-        body: { enabled },
+        body: JSON.stringify({ enabled }),
       }),
     onMutate: async ({ id, enabled }) => {
       await queryClient.cancelQueries({ queryKey: ["integrations", token] });
