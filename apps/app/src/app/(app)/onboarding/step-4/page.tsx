@@ -41,7 +41,7 @@ const PLANS = [
   },
 ];
 
-export default function OnboardingStep5() {
+export default function OnboardingStep4() {
   const router = useRouter();
 
   return (

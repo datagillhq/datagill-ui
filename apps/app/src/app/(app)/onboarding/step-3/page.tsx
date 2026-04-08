@@ -10,10 +10,10 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 type Invited = { email: string; role: string };
 
 function initials(email: string) {
-  return email.slice(0, 2).toUpperCase();
+  return email.split("@")[0].slice(0, 2).toUpperCase();
 }
 
-export default function OnboardingStep4() {
+export default function OnboardingStep3() {
   const router = useRouter();
   const { data: session } = authClient.useSession();
 
@@ -80,11 +80,7 @@ export default function OnboardingStep4() {
     <div className="flex flex-1 flex-col px-12 py-10">
       <h1 className="mb-1 text-4xl font-bold text-foreground">Invite your team</h1>
       <p className="mb-8 text-muted-foreground">
-        Collaboration is better together. Add your teammates to{" "}
-        <span className="font-medium text-foreground">
-          {session?.user?.name ?? "your organization"}
-        </span>
-        .
+        Collaboration is better together. Add your teammates to your organization.
       </p>
 
       {/* Invite card */}
@@ -119,7 +115,7 @@ export default function OnboardingStep4() {
           ))}
           <input
             ref={inputRef}
-            type="email"
+            type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}

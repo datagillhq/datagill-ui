@@ -19,7 +19,7 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 
-import OnboardingStep4 from "@/app/(app)/onboarding/step-3/page";
+import OnboardingStep3 from "@/app/(app)/onboarding/step-3/page";
 
 describe("OnboardingStep4", () => {
   beforeEach(() => {
@@ -28,14 +28,14 @@ describe("OnboardingStep4", () => {
   });
 
   it("renders the invite form", () => {
-    render(<OnboardingStep4 />);
+    render(<OnboardingStep3 />);
     expect(screen.getByText("Invite your team")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Add email addresses...")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /send invites/i })).toBeDisabled();
   });
 
   it("adds an email tag on Enter", () => {
-    render(<OnboardingStep4 />);
+    render(<OnboardingStep3 />);
     const input = screen.getByPlaceholderText("Add email addresses...");
     fireEvent.change(input, { target: { value: "alice@example.com" } });
     fireEvent.keyDown(input, { key: "Enter" });
@@ -44,7 +44,7 @@ describe("OnboardingStep4", () => {
   });
 
   it("adds an email tag on comma", () => {
-    render(<OnboardingStep4 />);
+    render(<OnboardingStep3 />);
     const input = screen.getByPlaceholderText("Add email addresses...");
     fireEvent.change(input, { target: { value: "bob@example.com" } });
     fireEvent.keyDown(input, { key: "," });
@@ -52,7 +52,7 @@ describe("OnboardingStep4", () => {
   });
 
   it("ignores invalid email addresses", () => {
-    render(<OnboardingStep4 />);
+    render(<OnboardingStep3 />);
     const input = screen.getByPlaceholderText("Add email addresses...");
     fireEvent.change(input, { target: { value: "not-an-email" } });
     fireEvent.keyDown(input, { key: "Enter" });
@@ -61,7 +61,7 @@ describe("OnboardingStep4", () => {
   });
 
   it("calls inviteMember and shows invited list on success", async () => {
-    render(<OnboardingStep4 />);
+    render(<OnboardingStep3 />);
     const input = screen.getByPlaceholderText("Add email addresses...");
     fireEvent.change(input, { target: { value: "alice@example.com" } });
     fireEvent.keyDown(input, { key: "Enter" });
@@ -77,7 +77,7 @@ describe("OnboardingStep4", () => {
 
   it("shows error count when invites fail", async () => {
     mockInviteMember.mockResolvedValue({ data: null, error: { message: "Failed" } });
-    render(<OnboardingStep4 />);
+    render(<OnboardingStep3 />);
     const input = screen.getByPlaceholderText("Add email addresses...");
     fireEvent.change(input, { target: { value: "alice@example.com" } });
     fireEvent.keyDown(input, { key: "Enter" });
