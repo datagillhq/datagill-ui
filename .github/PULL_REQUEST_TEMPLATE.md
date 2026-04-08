@@ -13,3 +13,4 @@
 - [ ] PR is under 150 lines (excluding generated files)
 - [ ] All DataGill API calls go through `src/lib/api.ts`
 - [ ] Mock or design reference reviewed before any layout/styling code
+- [ ] AI review complete (see AGENTS.md §10 for the prompt — paste this PR's URL)

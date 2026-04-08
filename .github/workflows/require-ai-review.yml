@@ -1,0 +1,20 @@
+name: Require AI review checkbox
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  check-ai-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check AI review checkbox is ticked
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          if echo "$BODY" | grep -qE '^\- \[x\] AI review complete'; then
+            echo "AI review checkbox is checked."
+          else
+            echo "ERROR: Check the 'AI review complete' box in the PR description before merging."
+            exit 1
+          fi
