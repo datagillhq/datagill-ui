@@ -31,7 +31,7 @@ describe("OnboardingLayout sidebar", () => {
     expect(org?.className).toContain("text-indigo-400");
   });
 
-  it("renders all 5 steps", () => {
+  it("renders all 4 steps", () => {
     render(
       <OnboardingLayout>
         <div />
@@ -39,9 +39,9 @@ describe("OnboardingLayout sidebar", () => {
     );
     expect(screen.getByText("Organization")).toBeInTheDocument();
     expect(screen.getByText("Integrations")).toBeInTheDocument();
-    expect(screen.getByText("Verification")).toBeInTheDocument();
     expect(screen.getByText("Team Members")).toBeInTheDocument();
     expect(screen.getByText("Billing")).toBeInTheDocument();
+    expect(screen.queryByText("Verification")).not.toBeInTheDocument();
   });
 
   it("dims past steps", () => {

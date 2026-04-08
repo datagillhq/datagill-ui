@@ -40,12 +40,14 @@ export default function OnboardingStep1() {
     if (!orgName.trim()) return;
     setSaving(true);
     setError(null);
-    const { error } = await authClient.organization.create({ name: orgName, slug });
+    const { data, error } = await authClient.organization.create({ name: orgName, slug });
     setSaving(false);
-    if (error) {
+    if (error || !data) {
       setError("This workspace URL is already taken or invalid. Please try another.");
       return;
     }
+    // Set the new org as active so subsequent API calls (e.g. inviteMember) have an activeOrganizationId
+    await authClient.organization.setActive({ organizationId: data.id });
     router.push("/onboarding/step-2");
   }
 

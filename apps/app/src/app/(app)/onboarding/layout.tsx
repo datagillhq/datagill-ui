@@ -2,16 +2,15 @@
 
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { CreditCard, LayoutDashboard, Plug, ShieldCheck, Users } from "lucide-react";
+import { CreditCard, LayoutDashboard, Plug, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const STEPS = [
   { label: "Organization", href: "/onboarding/step-1", icon: LayoutDashboard },
   { label: "Integrations", href: "/onboarding/step-2", icon: Plug },
-  { label: "Verification", href: "/onboarding/step-3", icon: ShieldCheck },
-  { label: "Team Members", href: "/onboarding/step-4", icon: Users },
-  { label: "Billing", href: "/onboarding/step-5", icon: CreditCard },
+  { label: "Team Members", href: "/onboarding/step-3", icon: Users },
+  { label: "Billing", href: "/onboarding/step-4", icon: CreditCard },
 ];
 
 export default function OnboardingLayout({ children }: { children: React.ReactNode }) {

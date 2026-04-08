@@ -10,7 +10,7 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@datagill/auth/client", () => ({
   authClient: {
-    organization: { create: vi.fn() },
+    organization: { create: vi.fn(), setActive: vi.fn().mockResolvedValue({}) },
   },
 }));
 
@@ -48,7 +48,7 @@ describe("OnboardingStep1", () => {
   });
 
   it("navigates to step 2 on success", async () => {
-    mockCreateOrg.mockResolvedValue({ data: {}, error: null });
+    mockCreateOrg.mockResolvedValue({ data: { id: "org-1" }, error: null });
     render(<OnboardingStep1 />);
     await userEvent.type(screen.getByPlaceholderText("Acme Corp"), "Acme Corp");
     await userEvent.click(screen.getByRole("button", { name: /create & continue/i }));
