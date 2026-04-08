@@ -17,7 +17,7 @@ export function useSupportedProviders() {
   const token = session?.session?.token ?? null;
 
   const { data: supportedIds = [], ...query } = useQuery({
-    queryKey: ["supported-providers"],
+    queryKey: ["supported-providers", token],
     queryFn: () => fetchSupportedProviderIds(token),
     staleTime: 5 * 60 * 1000, // provider list changes only on backend deploy
   });
