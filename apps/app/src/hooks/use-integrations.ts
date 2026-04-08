@@ -18,6 +18,7 @@ export function useIntegrations() {
   return useQuery({
     queryKey: ["integrations", token],
     enabled: !!token,
+    retry: false,
     queryFn: () => apiFetch<ConnectedIntegration[]>("/v1/integrations", { token }),
     staleTime: 30_000,
   });

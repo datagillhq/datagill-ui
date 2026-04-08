@@ -12,7 +12,7 @@ export default function SettingsIntegrationsPage() {
   const { data: session } = useSession();
   const token = session?.session?.token ?? null;
 
-  const { data: integrations, isLoading } = useIntegrations();
+  const { data: integrations, isLoading, isError } = useIntegrations();
   const { mutate: toggle, isPending: isToggling } = useToggleIntegration();
 
   const [configuringId, setConfiguringId] = useState<string | null>(null);
@@ -33,7 +33,7 @@ export default function SettingsIntegrationsPage() {
       </div>
 
       {/* Grid */}
-      {isLoading ? (
+      {isLoading && !isError ? (
         <div className="grid grid-cols-3 gap-5">
           {[1, 2, 3].map((n) => (
             <div key={n} className="h-52 animate-pulse rounded-xl bg-card" />
