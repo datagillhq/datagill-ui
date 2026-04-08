@@ -19,7 +19,7 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 
-import OnboardingStep4 from "@/app/(app)/onboarding/step-4/page";
+import OnboardingStep4 from "@/app/(app)/onboarding/step-3/page";
 
 describe("OnboardingStep4", () => {
   beforeEach(() => {
