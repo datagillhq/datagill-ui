@@ -7,10 +7,18 @@ vi.mock("@/hooks/use-integrations", () => ({
 }));
 
 vi.mock("@/components/shared/integration-modal", () => ({
-  IntegrationModal: ({ open, onCancel }: { open: boolean; onCancel: () => void }) =>
+  IntegrationModal: ({
+    open,
+    mode,
+    onCancel,
+  }: {
+    open: boolean;
+    mode: string;
+    onCancel: () => void;
+  }) =>
     open ? (
       <div>
-        <span>IntegrationModal</span>
+        <span>IntegrationModal-{mode}</span>
         <button type="button" onClick={onCancel}>
           Close
         </button>
@@ -31,6 +39,7 @@ function setupHooks(integrations: hooks.ConnectedIntegration[] | undefined, load
   vi.mocked(hooks.useIntegrations).mockReturnValue({
     data: integrations,
     isLoading: loading,
+    isError: false,
   } as ReturnType<typeof hooks.useIntegrations>);
   vi.mocked(hooks.useToggleIntegration).mockReturnValue({
     mutate: mockToggle,
@@ -45,32 +54,28 @@ describe("SettingsIntegrationsPage", () => {
     expect(container.querySelectorAll(".animate-pulse").length).toBeGreaterThan(0);
   });
 
-  it("shows empty state when no integrations", () => {
+  it("shows all providers even when none are connected", () => {
     setupHooks([]);
     render(<SettingsIntegrationsPage />);
-    expect(screen.getByText("No integrations connected")).toBeInTheDocument();
+    // All 4 providers from the catalog should appear
+    expect(screen.getByText("LaunchDarkly")).toBeInTheDocument();
+    expect(screen.getByText("Statsig")).toBeInTheDocument();
+    expect(screen.getByText("GitHub")).toBeInTheDocument();
+    expect(screen.getByText("Buildkite")).toBeInTheDocument();
+    // All should have Connect buttons (none connected)
+    expect(screen.getAllByRole("button", { name: "Connect" })).toHaveLength(4);
   });
 
-  it("renders integration cards for known providers", () => {
+  it("shows connected card with toggle for a connected provider", () => {
     setupHooks([
       { id: "int-1", providerId: "launchdarkly", enabled: true, createdAt: "2026-04-01T00:00:00Z" },
     ]);
     render(<SettingsIntegrationsPage />);
-    expect(screen.getByText("LaunchDarkly")).toBeInTheDocument();
     expect(screen.getByText("Active")).toBeInTheDocument();
-  });
-
-  it("skips cards for unknown providers", () => {
-    setupHooks([
-      {
-        id: "int-2",
-        providerId: "unknown-provider",
-        enabled: true,
-        createdAt: "2026-04-01T00:00:00Z",
-      },
-    ]);
-    render(<SettingsIntegrationsPage />);
-    expect(screen.queryByText("Active")).not.toBeInTheDocument();
+    expect(screen.getByRole("switch")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Configure" })).toBeInTheDocument();
+    // Other 3 still show Connect
+    expect(screen.getAllByRole("button", { name: "Connect" })).toHaveLength(3);
   });
 
   it("calls toggle mutation when toggle is clicked", () => {
@@ -82,14 +87,21 @@ describe("SettingsIntegrationsPage", () => {
     expect(mockToggle).toHaveBeenCalledWith({ id: "int-1", enabled: false });
   });
 
-  it("opens configure modal and closes it", () => {
+  it("opens edit modal when Configure is clicked", () => {
     setupHooks([
       { id: "int-1", providerId: "launchdarkly", enabled: true, createdAt: "2026-04-01T00:00:00Z" },
     ]);
     render(<SettingsIntegrationsPage />);
     fireEvent.click(screen.getByRole("button", { name: "Configure" }));
-    expect(screen.getByText("IntegrationModal")).toBeInTheDocument();
+    expect(screen.getByText("IntegrationModal-edit")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Close" }));
-    expect(screen.queryByText("IntegrationModal")).not.toBeInTheDocument();
+    expect(screen.queryByText("IntegrationModal-edit")).not.toBeInTheDocument();
+  });
+
+  it("opens create modal when Connect is clicked", () => {
+    setupHooks([]);
+    render(<SettingsIntegrationsPage />);
+    fireEvent.click(screen.getAllByRole("button", { name: "Connect" })[0]);
+    expect(screen.getByText("IntegrationModal-create")).toBeInTheDocument();
   });
 });

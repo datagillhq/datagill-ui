@@ -20,24 +20,24 @@ const integration: ConnectedIntegration = {
   createdAt: "2026-04-01T00:00:00Z",
 };
 
-function setup(
-  overrides: Partial<ConnectedIntegration> = {},
-  handlers: { onConfigure?: () => void; onToggle?: (v: boolean) => void } = {}
-) {
-  const onConfigure = handlers.onConfigure ?? vi.fn();
-  const onToggle = handlers.onToggle ?? vi.fn();
-  render(
-    <IntegrationCard
-      integration={{ ...integration, ...overrides }}
-      provider={provider}
-      onConfigure={onConfigure}
-      onToggle={onToggle}
-    />
-  );
-  return { onConfigure, onToggle };
-}
+describe("IntegrationCard — connected", () => {
+  function setup(
+    overrides: Partial<ConnectedIntegration> = {},
+    handlers: { onConfigure?: () => void; onToggle?: (v: boolean) => void } = {}
+  ) {
+    const onConfigure = handlers.onConfigure ?? vi.fn();
+    const onToggle = handlers.onToggle ?? vi.fn();
+    render(
+      <IntegrationCard
+        integration={{ ...integration, ...overrides }}
+        provider={provider}
+        onConfigure={onConfigure}
+        onToggle={onToggle}
+      />
+    );
+    return { onConfigure, onToggle };
+  }
 
-describe("IntegrationCard", () => {
   it("renders provider name and description", () => {
     setup();
     expect(screen.getByText("LaunchDarkly")).toBeInTheDocument();
@@ -98,5 +98,21 @@ describe("IntegrationCard", () => {
       />
     );
     expect(screen.getByRole("switch")).toBeDisabled();
+  });
+});
+
+describe("IntegrationCard — disconnected", () => {
+  it("shows Connect button and no toggle", () => {
+    const onConnect = vi.fn();
+    render(<IntegrationCard provider={provider} onConnect={onConnect} />);
+    expect(screen.getByRole("button", { name: "Connect" })).toBeInTheDocument();
+    expect(screen.queryByRole("switch")).not.toBeInTheDocument();
+  });
+
+  it("calls onConnect when Connect is clicked", () => {
+    const onConnect = vi.fn();
+    render(<IntegrationCard provider={provider} onConnect={onConnect} />);
+    fireEvent.click(screen.getByRole("button", { name: "Connect" }));
+    expect(onConnect).toHaveBeenCalled();
   });
 });
