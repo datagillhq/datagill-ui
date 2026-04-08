@@ -9,66 +9,52 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Comment with AI review prompt
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const prUrl = context.payload.pull_request.html_url;
-            const body = `## AI Review
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh issue comment "$PR_NUMBER" --repo "$REPO" --body "## AI Review
 
-Paste the following prompt into any AI assistant to review this PR.
+Paste the following into any AI assistant (Claude, ChatGPT, Copilot, etc.) to review this PR:
 
 ---
 
-Review the PR at ${prUrl}.
+Review the PR at $PR_URL
 
-Fetch the diff with:
-\`\`\`
-gh pr diff ${prUrl}
-\`\`\`
-and the description with:
-\`\`\`
-gh pr view ${prUrl}
-\`\`\`
+Fetch the diff with \`gh pr diff $PR_URL\` and the description with \`gh pr view $PR_URL\`. Then apply every item in the checklist below. For each item, either confirm it passes or quote the offending file, line, and a one-sentence explanation. Be terse — flag real issues only, no praise. If all pass, say 'LGTM — no issues found.'
 
-Then apply every item in the checklist below. For each item, either confirm it passes or quote the offending file, line, and a one-sentence explanation. Be terse — flag real issues only, no praise. If all pass, say "LGTM — no issues found."
+**Security**
+- Open redirect: any \`router.push(param)\` or \`redirect(param)\` where value comes from a URL query string must only allow paths starting with \`/\` (not \`//\`).
+- Server/client boundary: no secrets, tokens, session data, or server-only env vars in \`use client\` components or files imported by them.
+- \`dangerouslySetInnerHTML\` never used with unsanitised user content.
+- No \`BETTER_AUTH_SECRET\`, \`AUTH_PRIVATE_KEY\`, or other server secrets referenced in client-side code.
 
-### Security
-- [ ] Open redirect: any \`router.push(param)\` or \`redirect(param)\` where value comes from a URL query string must only allow paths starting with \`/\` (not \`//\`).
-- [ ] Server/client boundary: no secrets, tokens, session data, or server-only env vars in \`"use client"\` components or files imported by them.
-- [ ] \`dangerouslySetInnerHTML\` never used with unsanitised user content.
-- [ ] No \`BETTER_AUTH_SECRET\`, \`AUTH_PRIVATE_KEY\`, or other server secrets referenced in client-side code.
+**BetterAuth / JWT**
+- All auth imports come from \`@datagill/auth/client\`, \`@datagill/auth/server\`, or \`@datagill/auth/provider\` — never directly from \`better-auth\`.
+- If this PR touches session or JWT handling: confirm \`organizationId\` is still emitted as a JWT claim (missing it causes all API calls to return 401).
 
-### BetterAuth / JWT
-- [ ] All auth imports come from \`@datagill/auth/client\`, \`@datagill/auth/server\`, or \`@datagill/auth/provider\` — never directly from \`better-auth\`.
-- [ ] If this PR touches session or JWT handling: confirm \`organizationId\` is still emitted as a JWT claim (missing it causes all API calls to return 401).
+**API conventions**
+- All DataGill API calls go through \`apps/app/src/lib/api.ts\` — no bare \`fetch()\` calls in pages or components.
+- Backend error codes are mapped to display strings in \`api.ts\`, not inline in components.
 
-### API conventions
-- [ ] All DataGill API calls go through \`apps/app/src/lib/api.ts\` — no bare \`fetch()\` calls in pages or components.
-- [ ] Backend error codes are mapped to display strings in \`api.ts\`, not inline in components.
+**State and data fetching**
+- Submit buttons are disabled while a request is in flight (no double-submit).
+- \`useQuery\` hooks have an appropriate \`staleTime\` if the data does not change on every focus.
+- No N+1 pattern: a list component must not call \`useQuery\` per item in a loop or \`useEffect\`.
 
-### State and data fetching
-- [ ] Submit buttons are disabled while a request is in flight (no double-submit).
-- [ ] \`useQuery\` hooks have an appropriate \`staleTime\` if the data doesn't change on every focus.
-- [ ] No N+1 pattern: a list component must not call \`useQuery\` per item in a loop or \`useEffect\`.
+**Next.js specifics**
+- Components without hooks, event handlers, or browser APIs are server components (no unnecessary \`use client\`).
+- Any component calling \`useSearchParams()\` is wrapped in \`<Suspense>\`.
+- Server and client render identically on first paint (no hydration mismatches without scoped \`suppressHydrationWarning\`).
+- Next.js middleware performs only JWT/cookie validation — no DB calls.
 
-### Next.js specifics
-- [ ] Components without hooks, event handlers, or browser APIs are server components (no unnecessary \`"use client"\`).
-- [ ] Any component calling \`useSearchParams()\` is wrapped in \`<Suspense>\`.
-- [ ] Server and client render identically on first paint (no hydration mismatches without scoped \`suppressHydrationWarning\`).
-- [ ] Next.js middleware performs only JWT/cookie validation — no DB calls.
+**Package boundaries**
+- Each env var is validated in exactly one place (\`apps/app/src/lib/env.ts\` for app vars, \`packages/auth/keys.ts\` for auth vars).
+- No cross-imports between \`apps/\` packages — only \`packages/\` are shared.
+- shadcn primitives in \`components/ui/\` are not hand-edited.
 
-### Package boundaries
-- [ ] Each env var is validated in exactly one place (\`apps/app/src/lib/env.ts\` for app vars, \`packages/auth/keys.ts\` for auth vars).
-- [ ] No cross-imports between \`apps/\` packages — only \`packages/\` are shared.
-- [ ] shadcn primitives in \`components/ui/\` are not hand-edited.
-
-### PR hygiene
-- [ ] PR is under 150 lines of changed code (excluding generated files).
-- [ ] \`tsc --noEmit\` and \`biome check\` would pass on this diff.`;
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body
-            });
+**PR hygiene**
+- PR is under 150 lines of changed code (excluding generated files).
+- \`tsc --noEmit\` and \`biome check\` would pass on this diff."
