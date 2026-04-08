@@ -43,6 +43,7 @@ export function useTopTeams(range: DateRange) {
       apiFetch<TeamActivity[]>(`/v1/analytics?metric=top_teams&from=${range.from}&to=${range.to}`, {
         token,
       }),
+    retry: false,
     staleTime: 60_000,
   });
 }
@@ -59,6 +60,7 @@ export function useLaunchedWins(range: DateRange) {
         `/v1/analytics?metric=launched_wins&from=${range.from}&to=${range.to}`,
         { token }
       ),
+    retry: false,
     staleTime: 60_000,
   });
 }
@@ -74,6 +76,7 @@ export function useVelocity(range: DateRange) {
       apiFetch<VelocityData>(`/v1/analytics?metric=velocity&from=${range.from}&to=${range.to}`, {
         token,
       }),
+    retry: false,
     staleTime: 60_000,
   });
 }
