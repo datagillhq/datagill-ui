@@ -4,7 +4,7 @@ This document covers every PR needed to go from the current minimal bootstrap to
 
 ---
 
-## Progress — as of 2026-04-07
+## Progress — as of 2026-04-08
 
 | PR | Description | Status |
 |---|---|---|
@@ -15,8 +15,10 @@ This document covers every PR needed to go from the current minimal bootstrap to
 | #12 | F.2: BetterAuth email/password, RS256 JWT, middleware, auth pages | ✅ Merged |
 | #13 | Docs: frontend code review checklist in AGENTS.md | ✅ Merged |
 | #17 | F.4: Static provider catalog + useSupportedProviders hook | ✅ Merged |
+| #19 | F.3: Onboarding layout + Step 1 (Create Org) | ✅ Merged |
+| #20 | F.5: IntegrationModal — API key connect/edit dialog | ✅ Merged |
 
-**Next up:** F.3 (Onboarding layout + Step 1) can start — F.4 is merged. F.5 (Integration Modal) and F.8 (Provider Card) are now unblocked on Track B.
+**Next up:** F.6 (Onboarding Step 2) — both F.3 and F.5 are merged, unblocked.
 
 ---
 
