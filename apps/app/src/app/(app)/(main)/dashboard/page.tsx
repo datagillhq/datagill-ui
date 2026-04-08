@@ -134,14 +134,11 @@ function LaunchedWinsSection({ flags }: { flags?: LaunchedFlag[] }) {
 function TopTeamsSection({ teams }: { teams?: TeamActivity[] }) {
   return (
     <section>
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3">
         <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
           <Users className="h-4 w-4 text-indigo-400" />
           Top Teams
         </h2>
-        <span className="rounded border border-border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-          Activity Heatmap
-        </span>
       </div>
       {teams && teams.length > 0 ? (
         <div className="grid grid-cols-2 gap-3">
