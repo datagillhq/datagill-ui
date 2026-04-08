@@ -20,8 +20,10 @@ This document covers every PR needed to go from the current minimal bootstrap to
 | #21 | F.6: Onboarding Step 2 — provider grid + connect flow | ✅ Merged |
 | #22 | F.7: Onboarding Step 3 (Team Members) + Step 4 (Billing) | ✅ Merged |
 | #23 | F.11/F.13/F.14: Dashboard layout, Top Teams, Launched Wins, Velocity | ✅ Merged |
+| #24 | F.8/F.9/F.10: Settings/Integrations page — cards, toggle, configure | ✅ Merged |
+| #25 | Fix: retry: false on analytics hooks to prevent loading-forever | ✅ Merged |
 
-**Next up:** F.8 (Provider Card) → F.9 (Settings/Integrations page) → F.10 (configure/toggle/disconnect).
+**MVP frontend complete.** Remaining work is blocked on backend (`GET /v1/integrations`, `PATCH /v1/integrations/:id`, analytics fields `rollout_percentage` + `actor_name`).
 
 ---
 
