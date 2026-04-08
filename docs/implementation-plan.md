@@ -14,8 +14,9 @@ This document covers every PR needed to go from the current minimal bootstrap to
 | #11 | F.1: `apiFetch`, env validation, TanStack Query | ✅ Merged |
 | #12 | F.2: BetterAuth email/password, RS256 JWT, middleware, auth pages | ✅ Merged |
 | #13 | Docs: frontend code review checklist in AGENTS.md | ✅ Merged |
+| #17 | F.4: Static provider catalog + useSupportedProviders hook | ✅ Merged |
 
-**Next up:** F.3 (Onboarding layout + Step 1) and F.4 (Static provider catalog) can start in parallel — #12 has merged.
+**Next up:** F.3 (Onboarding layout + Step 1) can start — F.4 is merged. F.5 (Integration Modal) and F.8 (Provider Card) are now unblocked on Track B.
 
 ---
 
