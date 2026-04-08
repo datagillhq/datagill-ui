@@ -1,5 +1,12 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
+
+function wrapper({ children }: { children: ReactNode }) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+}
 
 vi.mock("@/hooks/use-integrations", () => ({
   useIntegrations: vi.fn(),
@@ -35,6 +42,10 @@ import * as hooks from "@/hooks/use-integrations";
 
 const mockToggle = vi.fn();
 
+beforeEach(() => {
+  mockToggle.mockClear();
+});
+
 function setupHooks(integrations: hooks.ConnectedIntegration[] | undefined, loading = false) {
   vi.mocked(hooks.useIntegrations).mockReturnValue({
     data: integrations,
@@ -50,13 +61,13 @@ function setupHooks(integrations: hooks.ConnectedIntegration[] | undefined, load
 describe("SettingsIntegrationsPage", () => {
   it("shows loading skeletons while fetching", () => {
     setupHooks(undefined, true);
-    const { container } = render(<SettingsIntegrationsPage />);
+    const { container } = render(<SettingsIntegrationsPage />, { wrapper });
     expect(container.querySelectorAll(".animate-pulse").length).toBeGreaterThan(0);
   });
 
   it("shows all providers even when none are connected", () => {
     setupHooks([]);
-    render(<SettingsIntegrationsPage />);
+    render(<SettingsIntegrationsPage />, { wrapper });
     // All 4 providers from the catalog should appear
     expect(screen.getByText("LaunchDarkly")).toBeInTheDocument();
     expect(screen.getByText("Statsig")).toBeInTheDocument();
@@ -70,7 +81,7 @@ describe("SettingsIntegrationsPage", () => {
     setupHooks([
       { id: "int-1", providerId: "launchdarkly", enabled: true, createdAt: "2026-04-01T00:00:00Z" },
     ]);
-    render(<SettingsIntegrationsPage />);
+    render(<SettingsIntegrationsPage />, { wrapper });
     expect(screen.getByText("Active")).toBeInTheDocument();
     expect(screen.getByRole("switch")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Configure" })).toBeInTheDocument();
@@ -82,7 +93,7 @@ describe("SettingsIntegrationsPage", () => {
     setupHooks([
       { id: "int-1", providerId: "launchdarkly", enabled: true, createdAt: "2026-04-01T00:00:00Z" },
     ]);
-    render(<SettingsIntegrationsPage />);
+    render(<SettingsIntegrationsPage />, { wrapper });
     fireEvent.click(screen.getByRole("switch"));
     expect(mockToggle).toHaveBeenCalledWith({ id: "int-1", enabled: false });
   });
@@ -91,7 +102,7 @@ describe("SettingsIntegrationsPage", () => {
     setupHooks([
       { id: "int-1", providerId: "launchdarkly", enabled: true, createdAt: "2026-04-01T00:00:00Z" },
     ]);
-    render(<SettingsIntegrationsPage />);
+    render(<SettingsIntegrationsPage />, { wrapper });
     fireEvent.click(screen.getByRole("button", { name: "Configure" }));
     expect(screen.getByText("IntegrationModal-edit")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Close" }));
@@ -100,7 +111,7 @@ describe("SettingsIntegrationsPage", () => {
 
   it("opens create modal when Connect is clicked", () => {
     setupHooks([]);
-    render(<SettingsIntegrationsPage />);
+    render(<SettingsIntegrationsPage />, { wrapper });
     fireEvent.click(screen.getAllByRole("button", { name: "Connect" })[0]);
     expect(screen.getByText("IntegrationModal-create")).toBeInTheDocument();
   });

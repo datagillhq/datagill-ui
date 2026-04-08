@@ -5,6 +5,7 @@ import { IntegrationModal } from "@/components/shared/integration-modal";
 import { useIntegrations, useToggleIntegration } from "@/hooks/use-integrations";
 import { PROVIDERS } from "@/lib/providers";
 import { useSession } from "@datagill/auth/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 type ModalState =
@@ -16,10 +17,16 @@ export default function SettingsIntegrationsPage() {
   const { data: session } = useSession();
   const token = session?.session?.token ?? null;
 
+  const queryClient = useQueryClient();
   const { data: integrations, isLoading, isError } = useIntegrations();
   const { mutate: toggle, isPending: isToggling } = useToggleIntegration();
 
   const [modal, setModal] = useState<ModalState>(null);
+
+  function handleConnectSuccess() {
+    queryClient.invalidateQueries({ queryKey: ["integrations"] });
+    setModal(null);
+  }
 
   const modalProvider = modal ? (PROVIDERS.find((p) => p.id === modal.providerId) ?? null) : null;
 
@@ -74,7 +81,7 @@ export default function SettingsIntegrationsPage() {
           provider={modalProvider}
           existingIntegrationId={modal.mode === "edit" ? modal.integrationId : undefined}
           token={token}
-          onSuccess={() => setModal(null)}
+          onSuccess={modal?.mode === "create" ? handleConnectSuccess : () => setModal(null)}
           onCancel={() => setModal(null)}
         />
       )}
