@@ -138,13 +138,25 @@ describe("IntegrationModal", () => {
     expect(input).toBeInTheDocument();
   });
 
-  it("in edit mode, omits apiKey from PUT body when key not touched", async () => {
+  it("in edit mode with no changes, calls onCancel without making an API call", () => {
+    const { onCancel } = renderModal({ mode: "edit", existingIntegrationId: "int-1" });
+    fireEvent.click(screen.getByRole("button", { name: /save/i }));
+    expect(onCancel).toHaveBeenCalled();
+    expect(vi.mocked(apiModule.apiFetch)).not.toHaveBeenCalled();
+  });
+
+  it("in edit mode, sends PUT with new apiKey when key is changed", async () => {
     vi.mocked(apiModule.apiFetch).mockResolvedValue(mockIntegration);
     renderModal({ mode: "edit", existingIntegrationId: "int-1" });
+    fireEvent.change(screen.getByPlaceholderText("Enter new API key to replace"), {
+      target: { value: "new-key" },
+    });
     fireEvent.click(screen.getByRole("button", { name: /save/i }));
     await waitFor(() => expect(vi.mocked(apiModule.apiFetch)).toHaveBeenCalled());
     const call = vi.mocked(apiModule.apiFetch).mock.calls[0];
+    expect(call[0]).toBe("/v1/integrations/int-1");
+    expect((call[1] as { method: string }).method).toBe("PUT");
     const body = JSON.parse((call[1] as { body: string }).body);
-    expect(body).not.toHaveProperty("apiKey");
+    expect(body.apiKey).toBe("new-key");
   });
 });

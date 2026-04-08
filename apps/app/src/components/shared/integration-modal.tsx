@@ -53,6 +53,12 @@ export function IntegrationModal({
   }
 
   async function handleSave() {
+    // In edit mode with no changes, nothing to send — just dismiss.
+    if (isEdit && !keyTouched) {
+      onCancel();
+      return;
+    }
+
     if (status === "saving") return;
     setStatus("saving");
     setErrorMsg(null);
@@ -60,11 +66,9 @@ export function IntegrationModal({
     try {
       let result: Integration | undefined;
       if (isEdit && existingIntegrationId) {
-        const body: Record<string, string> = {};
-        if (keyTouched && apiKey) body.apiKey = apiKey;
         result = await apiFetch<Integration>(`/v1/integrations/${existingIntegrationId}`, {
           method: "PUT",
-          body: JSON.stringify(body),
+          body: JSON.stringify({ apiKey }),
           token,
         });
       } else {
@@ -77,6 +81,10 @@ export function IntegrationModal({
       if (result) {
         setSavedIntegration(result);
         setStatus("success");
+      } else {
+        // Unexpected — POST/PUT should always return the integration body
+        setStatus("error");
+        setErrorMsg("Something went wrong. Please try again.");
       }
     } catch (err) {
       setStatus("error");
