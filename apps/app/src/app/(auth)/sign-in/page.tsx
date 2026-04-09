@@ -4,16 +4,24 @@ import { AuthCard } from "@/components/auth-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signIn } from "@datagill/auth/client";
+import { signIn, useSession } from "@datagill/auth/client";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: session } = useSession();
+
   // Validate callbackUrl to prevent open redirect — only allow same-origin paths.
-  const raw = searchParams.get("callbackUrl") ?? "/";
-  const callbackUrl = raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
+  const raw = searchParams.get("callbackUrl") ?? "/dashboard";
+  const callbackUrl = raw.startsWith("/") && !raw.startsWith("//") ? raw : "/dashboard";
+
+  // Already signed in — let the middleware redirect, but also push client-side
+  // so the user isn't stuck on the sign-in page after a fast session load.
+  useEffect(() => {
+    if (session) router.replace("/dashboard");
+  }, [session, router]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
