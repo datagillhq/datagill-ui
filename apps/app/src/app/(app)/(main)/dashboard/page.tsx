@@ -238,10 +238,9 @@ function AuditLogSection({
           </thead>
           <tbody>
             {entries && entries.length > 0 ? (
-              entries.map((e, i) => (
+              entries.map((e) => (
                 <tr
-                  // biome-ignore lint/suspicious/noArrayIndexKey: audit log entries have no stable key
-                  key={i}
+                  key={`${e.flagKey}-${e.occurredAt}`}
                   className="border-b border-border last:border-0 hover:bg-muted/30"
                 >
                   <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">

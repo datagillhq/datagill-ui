@@ -64,8 +64,7 @@ describe("DashboardPage", () => {
 
   it("shows skeletons while loading", () => {
     setup({ loading: true });
-    const { container } = render(<DashboardPage />);
-    expect(container.querySelectorAll(".animate-pulse").length).toBeGreaterThan(0);
+    expect(document.querySelectorAll(".animate-pulse").length).toBeGreaterThan(0);
   });
 
   it("shows empty state for launched wins when no data", () => {
