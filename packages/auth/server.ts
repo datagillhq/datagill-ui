@@ -17,6 +17,16 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  advanced: {
+    database: {
+      // BetterAuth defaults to nanoid-style IDs which are not valid UUIDs.
+      // datagill-core parses the JWT organizationId claim as a UUID, so all
+      // generated IDs must be UUID v4 format. Use a function (not "uuid") so
+      // BetterAuth generates the ID in application code — "uuid" tells it to
+      // rely on a DB DEFAULT that doesn't exist on our schema.
+      generateId: () => crypto.randomUUID(),
+    },
+  },
   plugins: [
     organization(),
     jwt({
