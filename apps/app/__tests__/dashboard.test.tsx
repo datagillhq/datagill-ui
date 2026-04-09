@@ -5,9 +5,10 @@ vi.mock("@/hooks/use-analytics", () => ({
   useLaunchedWins: vi.fn(),
   useTopTeams: vi.fn(),
   useVelocity: vi.fn(),
+  useAuditLog: vi.fn(),
   makeDateRange: (_days: number) => ({
-    from: "2026-04-01",
-    to: "2026-04-08",
+    from: "2026-04-01T00:00:00Z",
+    to: "2026-04-08T00:00:00Z",
   }),
 }));
 
@@ -20,15 +21,19 @@ vi.mock("next/link", () => ({
 import DashboardPage from "@/app/(app)/(main)/dashboard/page";
 import * as analytics from "@/hooks/use-analytics";
 
+const emptyAuditLog = { data: [], total: 0, page: 1, count: 0 };
+
 function setup({
   flags = [],
   teams = [],
   velocity = {},
+  auditLog = emptyAuditLog,
   loading = false,
 }: {
   flags?: analytics.LaunchedFlag[];
   teams?: analytics.TeamActivity[];
-  velocity?: analytics.VelocityData;
+  velocity?: Partial<analytics.VelocityData>;
+  auditLog?: Partial<analytics.AuditLogPage> | null;
   loading?: boolean;
 }) {
   vi.mocked(analytics.useLaunchedWins).mockReturnValue({
@@ -40,9 +45,13 @@ function setup({
     isLoading: loading,
   } as ReturnType<typeof analytics.useTopTeams>);
   vi.mocked(analytics.useVelocity).mockReturnValue({
-    data: velocity,
+    data: velocity as analytics.VelocityData,
     isLoading: loading,
   } as ReturnType<typeof analytics.useVelocity>);
+  vi.mocked(analytics.useAuditLog).mockReturnValue({
+    data: auditLog as analytics.AuditLogPage,
+    isLoading: loading,
+  } as ReturnType<typeof analytics.useAuditLog>);
   render(<DashboardPage />);
 }
 
@@ -51,6 +60,11 @@ describe("DashboardPage", () => {
     setup({});
     expect(screen.getByText("Overview")).toBeInTheDocument();
     expect(screen.getByText("Last 7 days")).toBeInTheDocument();
+  });
+
+  it("shows skeletons while loading", () => {
+    setup({ loading: true });
+    expect(document.querySelectorAll(".animate-pulse").length).toBeGreaterThan(0);
   });
 
   it("shows empty state for launched wins when no data", () => {
@@ -62,10 +76,12 @@ describe("DashboardPage", () => {
     setup({
       flags: [
         {
-          name: "apple-pay",
+          flagKey: "uuid-1",
+          flagName: "apple-pay",
           actorName: "Marcus Chen",
+          actorEmail: "marcus@acme.com",
           rolloutPercentage: 100,
-          date: "2024-05-12",
+          occurredAt: "2024-05-12T14:00:00Z",
         },
       ],
     });
@@ -81,17 +97,16 @@ describe("DashboardPage", () => {
 
   it("renders top team cards", () => {
     setup({
-      teams: [{ name: "Platform Eng", memberCount: 8, activityCount: 842 }],
+      teams: [{ teamName: "Platform Eng", changeCount: 842 }],
     });
     expect(screen.getByText("Platform Eng")).toBeInTheDocument();
-    expect(screen.getByText("8 Active Members")).toBeInTheDocument();
     expect(screen.getByText("842")).toBeInTheDocument();
   });
 
   it("shows velocity when data is available", () => {
     setup({ velocity: { averageMs: 744_000, sampleSize: 5 } });
     expect(screen.getByText("12m")).toBeInTheDocument();
-    expect(screen.getByText("Average time to 100% rollout")).toBeInTheDocument();
+    expect(screen.getByText("avg. time to 100% rollout")).toBeInTheDocument();
   });
 
   it("shows low sample size warning", () => {
@@ -110,5 +125,50 @@ describe("DashboardPage", () => {
     expect(screen.getByRole("button", { name: /last 30 days/i })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /last 30 days/i }));
     expect(screen.queryByRole("button", { name: /last 90 days/i })).not.toBeInTheDocument();
+  });
+
+  it("shows empty audit log state", () => {
+    setup({ auditLog: { data: [], total: 0, page: 1, count: 0 } });
+    expect(screen.getByText("No activity recorded in this period.")).toBeInTheDocument();
+  });
+
+  it("renders audit log rows", () => {
+    setup({
+      auditLog: {
+        data: [
+          {
+            occurredAt: "2024-05-12T14:12:04Z",
+            flagName: "Apple Pay",
+            flagKey: "uuid-1",
+            actorEmail: "sarah@acme.com",
+            actorName: "Sarah Jenkins",
+            eventType: "toggled",
+            environments: ["production"],
+          },
+        ],
+        total: 1,
+        page: 1,
+        count: 1,
+      },
+    });
+    expect(screen.getByText("Apple Pay")).toBeInTheDocument();
+    expect(screen.getByText("Sarah Jenkins")).toBeInTheDocument();
+    expect(screen.getByText("toggled")).toBeInTheDocument();
+    expect(screen.getByText("production")).toBeInTheDocument();
+  });
+
+  it("shows pagination controls when total > 25", () => {
+    const data = Array.from({ length: 25 }, (_, i) => ({
+      occurredAt: "2024-05-12T14:00:00Z",
+      flagName: `flag-${i}`,
+      flagKey: `uuid-${i}`,
+      actorEmail: "a@b.com",
+      actorName: "Actor",
+      eventType: "toggled",
+      environments: ["production"],
+    }));
+    setup({ auditLog: { data, total: 50, page: 1, count: 25 } });
+    expect(screen.getByRole("button", { name: /next/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /previous/i })).toBeDisabled();
   });
 });
