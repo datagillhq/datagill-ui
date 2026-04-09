@@ -38,7 +38,7 @@ export default function OnboardingStep2() {
   }
 
   function handleSuccess(integration: Integration) {
-    setConnected((prev) => ({ ...prev, [integration.providerId]: integration }));
+    setConnected((prev) => ({ ...prev, [integration.source]: integration }));
     setModalProvider(null);
   }
 
