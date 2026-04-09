@@ -2,7 +2,11 @@
 
 import { IntegrationCard } from "@/components/shared/integration-card";
 import { IntegrationModal } from "@/components/shared/integration-modal";
-import { useIntegrations, useToggleIntegration } from "@/hooks/use-integrations";
+import {
+  type IntegrationState,
+  useIntegrations,
+  useToggleIntegration,
+} from "@/hooks/use-integrations";
 import { PROVIDERS } from "@/lib/providers";
 import { useSession } from "@datagill/auth/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -10,7 +14,7 @@ import { useState } from "react";
 
 type ModalState =
   | { mode: "create"; providerId: string }
-  | { mode: "edit"; integrationId: string; providerId: string }
+  | { mode: "edit"; integrationKey: string; providerId: string }
   | null;
 
 export default function SettingsIntegrationsPage() {
@@ -23,12 +27,12 @@ export default function SettingsIntegrationsPage() {
 
   const [modal, setModal] = useState<ModalState>(null);
 
+  const modalProvider = modal ? (PROVIDERS.find((p) => p.id === modal.providerId) ?? null) : null;
+
   function handleConnectSuccess() {
     queryClient.invalidateQueries({ queryKey: ["integrations"] });
     setModal(null);
   }
-
-  const modalProvider = modal ? (PROVIDERS.find((p) => p.id === modal.providerId) ?? null) : null;
 
   return (
     <div className="px-10 py-8">
@@ -50,16 +54,20 @@ export default function SettingsIntegrationsPage() {
       ) : (
         <div className="grid grid-cols-3 gap-5">
           {PROVIDERS.map((provider) => {
-            const integration = integrations?.find((i) => i.providerId === provider.id);
+            const integration = integrations?.find((i) => i.source === provider.id);
             return integration ? (
               <IntegrationCard
                 key={provider.id}
                 integration={integration}
                 provider={provider}
                 isToggling={isToggling}
-                onToggle={(enabled) => toggle({ id: integration.id, enabled })}
+                onToggle={(state: IntegrationState) => toggle({ key: integration.key, state })}
                 onConfigure={() =>
-                  setModal({ mode: "edit", integrationId: integration.id, providerId: provider.id })
+                  setModal({
+                    mode: "edit",
+                    integrationKey: integration.key,
+                    providerId: provider.id,
+                  })
                 }
               />
             ) : (
@@ -79,9 +87,9 @@ export default function SettingsIntegrationsPage() {
           open
           mode={modal.mode}
           provider={modalProvider}
-          existingIntegrationId={modal.mode === "edit" ? modal.integrationId : undefined}
+          existingIntegrationId={modal.mode === "edit" ? modal.integrationKey : undefined}
           token={token}
-          onSuccess={modal?.mode === "create" ? handleConnectSuccess : () => setModal(null)}
+          onSuccess={modal.mode === "create" ? handleConnectSuccess : () => setModal(null)}
           onCancel={() => setModal(null)}
         />
       )}

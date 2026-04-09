@@ -42,7 +42,7 @@ const mockProvider: Provider = {
   tags: ["RECOMMENDED"],
 };
 
-const mockIntegration = { id: "int-1", providerId: "launchdarkly", createdAt: "2026-01-01" };
+const mockIntegration = { key: "int-uuid-1", source: "launchdarkly", state: "active" };
 
 function renderModal(props: Partial<Parameters<typeof IntegrationModal>[0]> = {}) {
   const onSuccess = vi.fn();
@@ -157,6 +157,6 @@ describe("IntegrationModal", () => {
     expect(call[0]).toBe("/v1/integrations/int-1");
     expect((call[1] as { method: string }).method).toBe("PUT");
     const body = JSON.parse((call[1] as { body: string }).body);
-    expect(body.apiKey).toBe("new-key");
+    expect(body.api_key).toBe("new-key");
   });
 });

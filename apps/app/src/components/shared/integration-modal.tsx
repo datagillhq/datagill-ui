@@ -10,9 +10,9 @@ import Image from "next/image";
 import { useState } from "react";
 
 export type Integration = {
-  id: string;
-  providerId: string;
-  createdAt: string;
+  key: string;
+  source: string;
+  state: string;
 };
 
 type Props = {
@@ -68,13 +68,13 @@ export function IntegrationModal({
       if (isEdit && existingIntegrationId) {
         result = await apiFetch<Integration>(`/v1/integrations/${existingIntegrationId}`, {
           method: "PUT",
-          body: JSON.stringify({ apiKey }),
+          body: JSON.stringify({ api_key: apiKey }),
           token,
         });
       } else {
         result = await apiFetch<Integration>("/v1/integrations", {
           method: "POST",
-          body: JSON.stringify({ providerId: provider.id, apiKey }),
+          body: JSON.stringify({ source: provider.id, api_key: apiKey }),
           token,
         });
       }
