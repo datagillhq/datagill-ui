@@ -5,7 +5,7 @@ import { type NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 // Routes that do NOT require authentication.
-const PUBLIC_PREFIXES = ["/sign-in", "/sign-up", "/api/auth"];
+const PUBLIC_PREFIXES = ["/sign-in", "/sign-up", "/api/auth", "/.well-known"];
 
 function isPublic(pathname: string): boolean {
   return PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));

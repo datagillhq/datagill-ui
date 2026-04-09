@@ -4,12 +4,15 @@ import { apiFetch } from "@/lib/api";
 import { useSession } from "@datagill/auth/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+export type IntegrationState = "active" | "paused" | "deleted";
+
 export type ConnectedIntegration = {
-  id: string;
-  providerId: string;
-  enabled: boolean;
-  createdAt: string;
+  key: string;
+  source: string;
+  state: IntegrationState;
 };
+
+type ListResponse = { integrations: ConnectedIntegration[] };
 
 export function useIntegrations() {
   const { data: session } = useSession();
@@ -19,7 +22,10 @@ export function useIntegrations() {
     queryKey: ["integrations", token],
     enabled: !!token,
     retry: false,
-    queryFn: () => apiFetch<ConnectedIntegration[]>("/v1/integrations", { token }),
+    queryFn: async () => {
+      const res = await apiFetch<ListResponse>("/v1/integrations", { token });
+      return res?.integrations ?? [];
+    },
     staleTime: 30_000,
   });
 }
@@ -30,17 +36,17 @@ export function useToggleIntegration() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, enabled }: { id: string; enabled: boolean }) =>
-      apiFetch<ConnectedIntegration>(`/v1/integrations/${id}`, {
+    mutationFn: ({ key, state }: { key: string; state: IntegrationState }) =>
+      apiFetch<ConnectedIntegration>(`/v1/integrations/${key}`, {
         token,
-        method: "PATCH",
-        body: JSON.stringify({ enabled }),
+        method: "PUT",
+        body: JSON.stringify({ state }),
       }),
-    onMutate: async ({ id, enabled }) => {
+    onMutate: async ({ key, state }) => {
       await queryClient.cancelQueries({ queryKey: ["integrations", token] });
       const previous = queryClient.getQueryData<ConnectedIntegration[]>(["integrations", token]);
       queryClient.setQueryData<ConnectedIntegration[]>(["integrations", token], (old) =>
-        old?.map((i) => (i.id === id ? { ...i, enabled } : i))
+        old?.map((i) => (i.key === key ? { ...i, state } : i))
       );
       return { previous };
     },

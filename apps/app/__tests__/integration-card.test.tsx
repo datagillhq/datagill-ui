@@ -1,5 +1,5 @@
 import { IntegrationCard } from "@/components/shared/integration-card";
-import type { ConnectedIntegration } from "@/hooks/use-integrations";
+import type { ConnectedIntegration, IntegrationState } from "@/hooks/use-integrations";
 import type { Provider } from "@/lib/providers";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
@@ -14,16 +14,15 @@ const provider: Provider = {
 };
 
 const integration: ConnectedIntegration = {
-  id: "int-1",
-  providerId: "launchdarkly",
-  enabled: true,
-  createdAt: "2026-04-01T00:00:00Z",
+  key: "int-uuid-1",
+  source: "launchdarkly",
+  state: "active",
 };
 
 describe("IntegrationCard — connected", () => {
   function setup(
     overrides: Partial<ConnectedIntegration> = {},
-    handlers: { onConfigure?: () => void; onToggle?: (v: boolean) => void } = {}
+    handlers: { onConfigure?: () => void; onToggle?: (v: IntegrationState) => void } = {}
   ) {
     const onConfigure = handlers.onConfigure ?? vi.fn();
     const onToggle = handlers.onToggle ?? vi.fn();
@@ -46,38 +45,38 @@ describe("IntegrationCard — connected", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows Active badge when enabled", () => {
-    setup({ enabled: true });
+  it("shows Active badge when state is active", () => {
+    setup({ state: "active" });
     expect(screen.getByText("Active")).toBeInTheDocument();
   });
 
-  it("hides Active badge when disabled", () => {
-    setup({ enabled: false });
+  it("hides Active badge when state is paused", () => {
+    setup({ state: "paused" });
     expect(screen.queryByText("Active")).not.toBeInTheDocument();
   });
 
-  it("toggle is checked when enabled", () => {
-    setup({ enabled: true });
+  it("toggle is checked when active", () => {
+    setup({ state: "active" });
     expect(screen.getByRole("switch")).toHaveAttribute("aria-checked", "true");
   });
 
-  it("toggle is unchecked when disabled", () => {
-    setup({ enabled: false });
+  it("toggle is unchecked when paused", () => {
+    setup({ state: "paused" });
     expect(screen.getByRole("switch")).toHaveAttribute("aria-checked", "false");
   });
 
-  it("calls onToggle with false when toggling off", () => {
+  it("calls onToggle with paused when toggling off", () => {
     const onToggle = vi.fn();
-    setup({ enabled: true }, { onToggle });
+    setup({ state: "active" }, { onToggle });
     fireEvent.click(screen.getByRole("switch"));
-    expect(onToggle).toHaveBeenCalledWith(false);
+    expect(onToggle).toHaveBeenCalledWith("paused");
   });
 
-  it("calls onToggle with true when toggling on", () => {
+  it("calls onToggle with active when toggling on", () => {
     const onToggle = vi.fn();
-    setup({ enabled: false }, { onToggle });
+    setup({ state: "paused" }, { onToggle });
     fireEvent.click(screen.getByRole("switch"));
-    expect(onToggle).toHaveBeenCalledWith(true);
+    expect(onToggle).toHaveBeenCalledWith("active");
   });
 
   it("calls onConfigure when configure button is clicked", () => {

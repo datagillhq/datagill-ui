@@ -1,6 +1,6 @@
 "use client";
 
-import type { ConnectedIntegration } from "@/hooks/use-integrations";
+import type { ConnectedIntegration, IntegrationState } from "@/hooks/use-integrations";
 import type { Provider } from "@/lib/providers";
 import { CheckCircle } from "lucide-react";
 import Image from "next/image";
@@ -9,7 +9,7 @@ type ConnectedProps = {
   integration: ConnectedIntegration;
   provider: Provider;
   onConfigure: () => void;
-  onToggle: (enabled: boolean) => void;
+  onToggle: (state: IntegrationState) => void;
   isToggling?: boolean;
   onConnect?: never;
 };
@@ -28,7 +28,7 @@ type Props = ConnectedProps | DisconnectedProps;
 export function IntegrationCard(props: Props) {
   const { provider } = props;
   const isConnected = !!props.integration;
-  const enabled = props.integration?.enabled ?? false;
+  const enabled = props.integration?.state === "active";
 
   return (
     <div className="flex flex-col rounded-xl border border-border bg-card p-5">
@@ -57,7 +57,7 @@ export function IntegrationCard(props: Props) {
               aria-checked={enabled}
               aria-label={`${enabled ? "Disable" : "Enable"} ${provider.name}`}
               disabled={props.isToggling}
-              onClick={() => props.onToggle(!enabled)}
+              onClick={() => props.onToggle(enabled ? "paused" : "active")}
               className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 ${
                 enabled ? "bg-indigo-600" : "bg-muted-foreground/30"
               }`}

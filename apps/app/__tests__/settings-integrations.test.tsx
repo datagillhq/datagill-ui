@@ -78,9 +78,7 @@ describe("SettingsIntegrationsPage", () => {
   });
 
   it("shows connected card with toggle for a connected provider", () => {
-    setupHooks([
-      { id: "int-1", providerId: "launchdarkly", enabled: true, createdAt: "2026-04-01T00:00:00Z" },
-    ]);
+    setupHooks([{ key: "int-uuid-1", source: "launchdarkly", state: "active" as const }]);
     render(<SettingsIntegrationsPage />, { wrapper });
     expect(screen.getByText("Active")).toBeInTheDocument();
     expect(screen.getByRole("switch")).toBeInTheDocument();
@@ -90,18 +88,14 @@ describe("SettingsIntegrationsPage", () => {
   });
 
   it("calls toggle mutation when toggle is clicked", () => {
-    setupHooks([
-      { id: "int-1", providerId: "launchdarkly", enabled: true, createdAt: "2026-04-01T00:00:00Z" },
-    ]);
+    setupHooks([{ key: "int-uuid-1", source: "launchdarkly", state: "active" as const }]);
     render(<SettingsIntegrationsPage />, { wrapper });
     fireEvent.click(screen.getByRole("switch"));
-    expect(mockToggle).toHaveBeenCalledWith({ id: "int-1", enabled: false });
+    expect(mockToggle).toHaveBeenCalledWith({ key: "int-uuid-1", state: "paused" });
   });
 
   it("opens edit modal when Configure is clicked", () => {
-    setupHooks([
-      { id: "int-1", providerId: "launchdarkly", enabled: true, createdAt: "2026-04-01T00:00:00Z" },
-    ]);
+    setupHooks([{ key: "int-uuid-1", source: "launchdarkly", state: "active" as const }]);
     render(<SettingsIntegrationsPage />, { wrapper });
     fireEvent.click(screen.getByRole("button", { name: "Configure" }));
     expect(screen.getByText("IntegrationModal-edit")).toBeInTheDocument();
