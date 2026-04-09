@@ -2,6 +2,7 @@ import type { AuditLogPage, LaunchedFlag, TeamActivity, VelocityData } from "@/h
 
 function formatVelocity(ms?: number): string {
   if (!ms) return "—";
+  if (ms < 60_000) return `${Math.round(ms / 1_000)}s`;
   if (ms < 3_600_000) return `${Math.round(ms / 60_000)}m`;
   if (ms < 86_400_000) {
     const h = Math.floor(ms / 3_600_000);
