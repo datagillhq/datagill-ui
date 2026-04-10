@@ -19,8 +19,13 @@ function isPublic(pathname: string): boolean {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Landing page is always public — no session check.
-  if (pathname === "/") return NextResponse.next();
+  // Landing page: public for unauthenticated users, redirect logged-in users to dashboard.
+  if (pathname === "/") {
+    const session = await auth.api.getSession({ headers: request.headers });
+    return session
+      ? NextResponse.redirect(new URL("/dashboard", request.url))
+      : NextResponse.next();
+  }
 
   // API routes and well-known endpoints are always public.
   if (isPublic(pathname)) return NextResponse.next();
