@@ -1,7 +1,7 @@
 "use client";
 
+import { useApiToken } from "@/hooks/use-api-token";
 import { apiFetch } from "@/lib/api";
-import { useSession } from "@datagill/auth/client";
 import { useQuery } from "@tanstack/react-query";
 
 // ─── Types (match actual backend shapes) ─────────────────────────────────────
@@ -71,8 +71,7 @@ function buildUrl(metric: string, range: DateRange, extra: Record<string, string
 // ─── Hooks ───────────────────────────────────────────────────────────────────
 
 export function useTopTeams(range: DateRange) {
-  const { data: session } = useSession();
-  const token = session?.session?.token ?? null;
+  const token = useApiToken();
 
   return useQuery({
     queryKey: ["top-teams", range, token],
@@ -90,8 +89,7 @@ export function useTopTeams(range: DateRange) {
 }
 
 export function useLaunchedWins(range: DateRange) {
-  const { data: session } = useSession();
-  const token = session?.session?.token ?? null;
+  const token = useApiToken();
 
   return useQuery({
     queryKey: ["launched-wins", range, token],
@@ -109,8 +107,7 @@ export function useLaunchedWins(range: DateRange) {
 }
 
 export function useVelocity(range: DateRange) {
-  const { data: session } = useSession();
-  const token = session?.session?.token ?? null;
+  const token = useApiToken();
 
   return useQuery({
     queryKey: ["velocity", range, token],
@@ -134,8 +131,7 @@ export function useVelocity(range: DateRange) {
 }
 
 export function useAuditLog(range: DateRange, page: number) {
-  const { data: session } = useSession();
-  const token = session?.session?.token ?? null;
+  const token = useApiToken();
 
   return useQuery({
     queryKey: ["audit-log", range, page, token],
