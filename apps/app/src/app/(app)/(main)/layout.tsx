@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { authClient } from "@datagill/auth/client";
-import { CreditCard, LayoutDashboard, LogOut, Plug, Settings, Users } from "lucide-react";
+import { LayoutDashboard, LogOut, Plug, Settings, UserCircle, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -10,7 +10,7 @@ const NAV = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Integrations", href: "/settings/integrations", icon: Plug },
   { label: "Team", href: "/settings/team", icon: Users },
-  { label: "Billing", href: "/settings/billing", icon: CreditCard },
+  { label: "Account", href: "/settings/account", icon: UserCircle },
 ];
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
