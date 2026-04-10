@@ -1,25 +1,41 @@
+import { auth } from "@datagill/auth/server";
 import { Activity, GitBranch, Users } from "lucide-react";
+import { headers } from "next/headers";
 import Link from "next/link";
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  const isLoggedIn = !!session;
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Navbar */}
       <nav className="flex items-center justify-between border-b border-border px-8 py-4">
         <span className="text-base font-bold tracking-tight text-foreground">DataGill</span>
         <div className="flex items-center gap-2">
-          <Link
-            href="/sign-in"
-            className="rounded-lg px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            Sign in
-          </Link>
-          <Link
-            href="/sign-up"
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
-          >
-            Get started
-          </Link>
+          {isLoggedIn ? (
+            <Link
+              href="/dashboard"
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
+            >
+              Go to Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/sign-in"
+                className="rounded-lg px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/sign-up"
+                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
+              >
+                Get started
+              </Link>
+            </>
+          )}
         </div>
       </nav>
 
@@ -38,18 +54,29 @@ export default function LandingPage() {
           your team always knows what shipped and when.
         </p>
         <div className="flex items-center gap-3">
-          <Link
-            href="/sign-up"
-            className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
-          >
-            Get started free
-          </Link>
-          <Link
-            href="/sign-in"
-            className="rounded-lg border border-border px-5 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            Sign in
-          </Link>
+          {isLoggedIn ? (
+            <Link
+              href="/dashboard"
+              className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
+            >
+              Go to Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/sign-up"
+                className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
+              >
+                Get started free
+              </Link>
+              <Link
+                href="/sign-in"
+                className="rounded-lg border border-border px-5 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                Sign in
+              </Link>
+            </>
+          )}
         </div>
       </div>
 
