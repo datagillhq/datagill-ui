@@ -81,9 +81,9 @@ export function ActivityLog({ auditLog, loading, page, onPageChange }: Props) {
               </thead>
               <tbody>
                 {entries.length > 0 ? (
-                  entries.map((e) => (
+                  entries.map((e, i) => (
                     <tr
-                      key={`${e.flagKey}-${e.occurredAt}`}
+                      key={`${e.flagKey}-${e.occurredAt}-${i}`}
                       className="border-b border-border last:border-0 hover:bg-muted/30"
                     >
                       <td className="whitespace-nowrap px-4 py-3 text-xs text-muted-foreground">

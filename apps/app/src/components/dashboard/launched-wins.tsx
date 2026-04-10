@@ -62,9 +62,9 @@ export function LaunchedWins({ flags, loading }: Props) {
             </thead>
             <tbody>
               {flags && flags.length > 0 ? (
-                flags.map((f) => (
+                flags.map((f, i) => (
                   <tr
-                    key={f.flagKey}
+                    key={`${f.flagKey}-${i}`}
                     className="border-b border-border last:border-0 hover:bg-muted/30"
                   >
                     <td className="px-4 py-3 font-medium text-foreground">{f.flagName}</td>
