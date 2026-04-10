@@ -85,7 +85,7 @@ describe("OnboardingStep2", () => {
 
   it("Continue button is disabled with no connections", () => {
     render(<OnboardingStep2 />);
-    expect(screen.getByRole("button", { name: /continue to verification/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /continue to team members/i })).toBeDisabled();
   });
 
   it("opens modal when a provider card is clicked", () => {
@@ -99,7 +99,7 @@ describe("OnboardingStep2", () => {
     fireEvent.click(screen.getByText("LaunchDarkly"));
     fireEvent.click(screen.getByRole("button", { name: "confirm" }));
     await waitFor(() => expect(screen.getByText(/1 tool/)).toBeInTheDocument());
-    expect(screen.getByRole("button", { name: /continue to verification/i })).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: /continue to team members/i })).not.toBeDisabled();
   });
 
   it("closes modal on cancel", () => {
