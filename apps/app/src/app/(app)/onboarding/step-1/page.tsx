@@ -19,6 +19,7 @@ function slugify(value: string) {
 
 export default function OnboardingStep1() {
   const router = useRouter();
+
   const [orgName, setOrgName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);

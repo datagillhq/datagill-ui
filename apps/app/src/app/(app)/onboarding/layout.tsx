@@ -2,9 +2,11 @@
 
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { authClient } from "@datagill/auth/client";
 import { CreditCard, LayoutDashboard, Plug, Users } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const STEPS = [
   { label: "Organization", href: "/onboarding/step-1", icon: LayoutDashboard },
@@ -15,7 +17,15 @@ const STEPS = [
 
 export default function OnboardingLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const currentIndex = STEPS.findIndex((s) => pathname.startsWith(s.href));
+
+  // Block re-entry: if user already has an org, onboarding is complete.
+  useEffect(() => {
+    authClient.organization.list().then(({ data }) => {
+      if (data && data.length > 0) router.replace("/dashboard");
+    });
+  }, [router]);
 
   return (
     <div className="flex min-h-screen bg-background">

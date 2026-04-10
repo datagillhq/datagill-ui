@@ -2,13 +2,15 @@
 
 import { cn } from "@/lib/utils";
 import { authClient } from "@datagill/auth/client";
-import { LayoutDashboard, LogOut, Plug, Settings } from "lucide-react";
+import { CreditCard, LayoutDashboard, LogOut, Plug, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 const NAV = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Manage Integrations", href: "/settings/integrations", icon: Plug },
+  { label: "Integrations", href: "/settings/integrations", icon: Plug },
+  { label: "Team", href: "/settings/team", icon: Users },
+  { label: "Billing", href: "/settings/billing", icon: CreditCard },
 ];
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
