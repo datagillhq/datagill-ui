@@ -7,7 +7,7 @@ import { authClient } from "@datagill/auth/client";
 import { ArrowLeft, ArrowRight, Pencil, Shield } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function slugify(value: string) {
   return value
@@ -19,6 +19,14 @@ function slugify(value: string) {
 
 export default function OnboardingStep1() {
   const router = useRouter();
+
+  // Prevent creating a second org — redirect to dashboard if one already exists.
+  useEffect(() => {
+    authClient.organization.list().then(({ data }) => {
+      if (data && data.length > 0) router.replace("/dashboard");
+    });
+  }, [router]);
+
   const [orgName, setOrgName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
