@@ -4,17 +4,12 @@ import { AuthCard } from "@/components/auth-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signUp, useSession } from "@datagill/auth/client";
+import { signUp } from "@datagill/auth/client";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function SignUpPage() {
   const router = useRouter();
-  const { data: session } = useSession();
-
-  useEffect(() => {
-    if (session) router.replace("/dashboard");
-  }, [session, router]);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
