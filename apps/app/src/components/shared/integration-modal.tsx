@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ApiError, apiFetch } from "@/lib/api";
 import type { Provider } from "@/lib/providers";
-import { ArrowRight, CheckCircle, Eye, EyeOff, Lock, ShieldCheck } from "lucide-react";
+import { ArrowRight, Check, Eye, EyeOff, Lock, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -44,22 +44,24 @@ export function IntegrationModal({
   const [savedIntegration, setSavedIntegration] = useState<Integration | null>(null);
 
   const isEdit = mode === "edit";
-  // In edit mode, display a masked placeholder until the user touches the field
+  const isSuccess = status === "success";
+  const isSaving = status === "saving";
+
   const displayValue = isEdit && !keyTouched ? "••••••••••••••••" : apiKey;
 
   function handleKeyChange(value: string) {
+    if (isSuccess) return;
     if (!keyTouched) setKeyTouched(true);
     setApiKey(value);
+    if (status === "error") setErrorMsg(null);
   }
 
   async function handleSave() {
-    // In edit mode with no changes, nothing to send — just dismiss.
     if (isEdit && !keyTouched) {
       onCancel();
       return;
     }
-
-    if (status === "saving") return;
+    if (isSaving || isSuccess) return;
     setStatus("saving");
     setErrorMsg(null);
 
@@ -82,7 +84,6 @@ export function IntegrationModal({
         setSavedIntegration(result);
         setStatus("success");
       } else {
-        // Unexpected — POST/PUT should always return the integration body
         setStatus("error");
         setErrorMsg("Something went wrong. Please try again.");
       }
@@ -99,16 +100,14 @@ export function IntegrationModal({
   }
 
   const canSave =
-    status !== "saving" &&
-    status !== "success" &&
-    (isEdit ? !keyTouched || apiKey.length > 0 : apiKey.length > 0);
+    !isSaving && !isSuccess && (isEdit ? !keyTouched || apiKey.length > 0 : apiKey.length > 0);
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onCancel()}>
       <DialogContent showCloseButton className="sm:max-w-2xl p-0 overflow-hidden">
         <div className="flex min-h-[420px]">
           {/* Left panel — connection form */}
-          <div className="flex-1 p-8">
+          <div className="flex flex-1 flex-col p-8">
             {/* Provider badge */}
             <div className="mb-6 flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-card border border-border">
@@ -128,52 +127,52 @@ export function IntegrationModal({
               </div>
             </div>
 
-            {status === "success" ? (
-              <div className="flex flex-col items-center justify-center py-8 gap-4">
-                <CheckCircle className="h-12 w-12 text-green-500" />
-                <p className="text-sm font-medium text-foreground">
-                  {provider.name} connected successfully
-                </p>
-                <button
-                  type="button"
-                  onClick={handleContinue}
-                  className="mt-2 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-                >
-                  Continue <ArrowRight className="h-4 w-4" />
-                </button>
-              </div>
-            ) : (
-              <>
-                <div className="mb-6">
-                  <Label className="mb-2 block text-sm font-medium text-foreground">API Key</Label>
-                  <div className="relative">
-                    <Input
-                      type={showKey && keyTouched ? "text" : "password"}
-                      value={displayValue}
-                      onChange={(e) => handleKeyChange(e.target.value)}
-                      onFocus={() => {
-                        if (isEdit && !keyTouched) {
-                          setKeyTouched(true);
-                          setApiKey("");
-                        }
-                      }}
-                      placeholder={isEdit ? "Enter new API key to replace" : "sk-••••••••"}
-                      className="pr-9 font-mono text-sm"
-                      autoComplete="off"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowKey((v) => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      tabIndex={-1}
-                    >
-                      {showKey ? (
-                        <EyeOff className="h-3.5 w-3.5" />
-                      ) : (
-                        <Eye className="h-3.5 w-3.5" />
-                      )}
-                    </button>
+            <div className="flex flex-1 flex-col">
+              <div className="mb-6">
+                <Label className="mb-2 block text-sm font-medium text-foreground">API Key</Label>
+                <div className="relative">
+                  <Input
+                    type={showKey && keyTouched && !isSuccess ? "text" : "password"}
+                    value={displayValue}
+                    onChange={(e) => handleKeyChange(e.target.value)}
+                    onFocus={() => {
+                      if (isEdit && !keyTouched) {
+                        setKeyTouched(true);
+                        setApiKey("");
+                      }
+                    }}
+                    disabled={isSuccess}
+                    placeholder={isEdit ? "Enter new API key to replace" : "sk-••••••••"}
+                    className={[
+                      "pr-9 font-mono text-sm transition-colors",
+                      isSuccess
+                        ? "border-green-500 text-muted-foreground focus-visible:ring-green-500/30"
+                        : status === "error"
+                          ? "border-destructive focus-visible:ring-destructive/30"
+                          : "",
+                    ].join(" ")}
+                    autoComplete="off"
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    {isSuccess ? (
+                      <Check className="h-3.5 w-3.5 text-green-500" />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setShowKey((v) => !v)}
+                        className="text-muted-foreground hover:text-foreground"
+                        tabIndex={-1}
+                      >
+                        {showKey ? (
+                          <EyeOff className="h-3.5 w-3.5" />
+                        ) : (
+                          <Eye className="h-3.5 w-3.5" />
+                        )}
+                      </button>
+                    )}
                   </div>
+                </div>
+                {!isSuccess && (
                   <a
                     href={provider.docsLink}
                     target="_blank"
@@ -182,20 +181,37 @@ export function IntegrationModal({
                   >
                     Find your API key →
                   </a>
-                </div>
+                )}
+                {isSuccess && (
+                  <p className="mt-1.5 text-xs text-green-500">
+                    {provider.name} connected successfully
+                  </p>
+                )}
+              </div>
 
-                {errorMsg && <p className="mb-4 text-sm text-destructive">{errorMsg}</p>}
+              {errorMsg && <p className="mb-4 text-sm text-destructive">{errorMsg}</p>}
 
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={!canSave}
-                  className="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {status === "saving" ? "Saving…" : "Save"}
-                </button>
-              </>
-            )}
+              <div className="flex justify-end mt-auto">
+                {isSuccess ? (
+                  <button
+                    type="button"
+                    onClick={handleContinue}
+                    className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                  >
+                    Continue <ArrowRight className="h-4 w-4" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSave}
+                    disabled={!canSave}
+                    className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSaving ? "Validating…" : isEdit ? "Save" : "Connect"}
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Right panel — security info */}

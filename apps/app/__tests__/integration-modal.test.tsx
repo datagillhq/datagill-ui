@@ -81,22 +81,22 @@ describe("IntegrationModal", () => {
     expect(screen.getByText("SOC 2 Compliant")).toBeInTheDocument();
   });
 
-  it("save button disabled when API key is empty", () => {
+  it("connect button disabled when API key is empty", () => {
     renderModal();
-    expect(screen.getByRole("button", { name: /save/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /connect/i })).toBeDisabled();
   });
 
-  it("save button enabled after typing a key", () => {
+  it("connect button enabled after typing a key", () => {
     renderModal();
     fireEvent.change(screen.getByPlaceholderText(/sk-/i), { target: { value: "sdk-abc123" } });
-    expect(screen.getByRole("button", { name: /save/i })).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: /connect/i })).not.toBeDisabled();
   });
 
-  it("calls POST /v1/integrations on save and shows success state", async () => {
+  it("calls POST /v1/integrations on connect and shows success state", async () => {
     vi.mocked(apiModule.apiFetch).mockResolvedValue(mockIntegration);
     renderModal();
     fireEvent.change(screen.getByPlaceholderText(/sk-/i), { target: { value: "sdk-abc123" } });
-    fireEvent.click(screen.getByRole("button", { name: /save/i }));
+    fireEvent.click(screen.getByRole("button", { name: /connect/i }));
     await waitFor(() =>
       expect(screen.getByText("LaunchDarkly connected successfully")).toBeInTheDocument()
     );
@@ -110,7 +110,7 @@ describe("IntegrationModal", () => {
     vi.mocked(apiModule.apiFetch).mockResolvedValue(mockIntegration);
     const { onSuccess } = renderModal();
     fireEvent.change(screen.getByPlaceholderText(/sk-/i), { target: { value: "sdk-abc123" } });
-    fireEvent.click(screen.getByRole("button", { name: /save/i }));
+    fireEvent.click(screen.getByRole("button", { name: /connect/i }));
     await waitFor(() => screen.getByText("Continue"));
     fireEvent.click(screen.getByText("Continue"));
     expect(onSuccess).toHaveBeenCalledWith(mockIntegration);
@@ -122,7 +122,7 @@ describe("IntegrationModal", () => {
     );
     renderModal();
     fireEvent.change(screen.getByPlaceholderText(/sk-/i), { target: { value: "bad-key" } });
-    fireEvent.click(screen.getByRole("button", { name: /save/i }));
+    fireEvent.click(screen.getByRole("button", { name: /connect/i }));
     await waitFor(() =>
       expect(
         screen.getByText("Invalid API key. Please check your account settings.")
