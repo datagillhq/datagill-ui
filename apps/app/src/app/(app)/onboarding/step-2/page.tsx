@@ -1,8 +1,8 @@
 "use client";
 
 import { type Integration, IntegrationModal } from "@/components/shared/integration-modal";
+import { useApiToken } from "@/hooks/use-api-token";
 import { PROVIDERS, type Provider } from "@/lib/providers";
-import { authClient } from "@datagill/auth/client";
 import { ArrowRight, Check, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,8 +13,7 @@ type ConnectedMap = Record<string, Integration>;
 
 export default function OnboardingStep2() {
   const router = useRouter();
-  const { data: session } = authClient.useSession();
-  const token = session?.session?.token ?? null;
+  const token = useApiToken();
 
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);

@@ -2,13 +2,13 @@
 
 import { IntegrationCard } from "@/components/shared/integration-card";
 import { IntegrationModal } from "@/components/shared/integration-modal";
+import { useApiToken } from "@/hooks/use-api-token";
 import {
   type IntegrationState,
   useIntegrations,
   useToggleIntegration,
 } from "@/hooks/use-integrations";
 import { PROVIDERS } from "@/lib/providers";
-import { useSession } from "@datagill/auth/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
@@ -18,8 +18,7 @@ type ModalState =
   | null;
 
 export default function SettingsIntegrationsPage() {
-  const { data: session } = useSession();
-  const token = session?.session?.token ?? null;
+  const token = useApiToken();
 
   const queryClient = useQueryClient();
   const { data: integrations, isLoading, isError } = useIntegrations();

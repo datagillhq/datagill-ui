@@ -1,7 +1,7 @@
 "use client";
 
+import { useApiToken } from "@/hooks/use-api-token";
 import { apiFetch } from "@/lib/api";
-import { useSession } from "@datagill/auth/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export type IntegrationState = "active" | "paused" | "deleted";
@@ -15,8 +15,7 @@ export type ConnectedIntegration = {
 type ListResponse = { integrations: ConnectedIntegration[] };
 
 export function useIntegrations() {
-  const { data: session } = useSession();
-  const token = session?.session?.token ?? null;
+  const token = useApiToken();
 
   return useQuery({
     queryKey: ["integrations", token],
@@ -31,8 +30,7 @@ export function useIntegrations() {
 }
 
 export function useToggleIntegration() {
-  const { data: session } = useSession();
-  const token = session?.session?.token ?? null;
+  const token = useApiToken();
   const queryClient = useQueryClient();
 
   return useMutation({

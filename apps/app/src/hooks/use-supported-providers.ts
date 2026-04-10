@@ -1,8 +1,8 @@
 "use client";
 
+import { useApiToken } from "@/hooks/use-api-token";
 import { apiFetch } from "@/lib/api";
 import { PROVIDERS, type Provider } from "@/lib/providers";
-import { useSession } from "@datagill/auth/client";
 import { useQuery } from "@tanstack/react-query";
 
 type SupportedProvider = Provider & { supported: boolean };
@@ -13,8 +13,7 @@ async function fetchSupportedProviderIds(token: string | null): Promise<string[]
 }
 
 export function useSupportedProviders() {
-  const { data: session } = useSession();
-  const token = session?.session?.token ?? null;
+  const token = useApiToken();
 
   const { data: supportedIds = [], ...query } = useQuery({
     queryKey: ["supported-providers", token],
