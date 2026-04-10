@@ -28,7 +28,7 @@ export const auth = betterAuth({
     },
   },
   plugins: [
-    organization(),
+    organization({ organizationLimit: 1 }),
     jwt({
       jwks: {
         keyPairConfig: { alg: "RS256" },
