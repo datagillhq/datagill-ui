@@ -10,11 +10,7 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@datagill/auth/client", () => ({
   authClient: {
-    organization: {
-      create: vi.fn(),
-      setActive: vi.fn().mockResolvedValue({}),
-      list: vi.fn().mockResolvedValue({ data: [] }),
-    },
+    organization: { create: vi.fn(), setActive: vi.fn().mockResolvedValue({}) },
   },
 }));
 

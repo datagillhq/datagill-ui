@@ -1,9 +1,11 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
+const mockReplace = vi.fn();
 let mockPathname = "/onboarding/step-1";
 vi.mock("next/navigation", () => ({
   usePathname: () => mockPathname,
+  useRouter: () => ({ replace: mockReplace }),
 }));
 vi.mock("next/link", () => ({
   default: ({
@@ -16,10 +18,28 @@ vi.mock("next/link", () => ({
     </a>
   ),
 }));
+vi.mock("@datagill/auth/client", () => ({
+  authClient: {
+    organization: { list: vi.fn().mockResolvedValue({ data: [] }) },
+  },
+}));
 
 import OnboardingLayout from "@/app/(app)/onboarding/layout";
+import { authClient } from "@datagill/auth/client";
 
 describe("OnboardingLayout sidebar", () => {
+  it("redirects to dashboard if user already has an org", async () => {
+    vi.mocked(authClient.organization.list).mockResolvedValueOnce({
+      data: [{ id: "org-1" }],
+    } as never);
+    render(
+      <OnboardingLayout>
+        <div />
+      </OnboardingLayout>
+    );
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/dashboard"));
+  });
+
   it("highlights the active step", () => {
     mockPathname = "/onboarding/step-1";
     render(
