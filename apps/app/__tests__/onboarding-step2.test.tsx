@@ -5,6 +5,11 @@ vi.mock("@datagill/auth/client", () => ({
   authClient: {
     useSession: () => ({ data: { session: { token: "tok" } } }),
   },
+  useSession: () => ({ data: { session: { token: "tok" } } }),
+}));
+
+vi.mock("@/hooks/use-api-token", () => ({
+  useApiToken: () => "test-jwt-token",
 }));
 
 vi.mock("next/navigation", () => ({
