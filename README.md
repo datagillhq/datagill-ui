@@ -11,27 +11,47 @@ Minimal Next.js App Router frontend for the DataGill search experience.
 
 ## Local development
 
-1. Install Node.js 22+.
-2. Start the search service first from `../datagill-core`.
-3. Run `npm install`.
-4. Start the UI with `npm run dev`.
-5. Open `http://localhost:3000`.
+### Prerequisites
 
-The UI fetches search results from `http://localhost:8082` by default. Override with `SEARCH_API_BASE_URL` if needed.
+- Node.js 22+
+- Docker Desktop
 
-## Docker
+### Setup
 
-Docker is optional for frontend local development. It is useful if you want a reproducible runtime or do not want Node.js installed directly on your machine.
+1. **Copy env file** and fill in values (ask a teammate for the secret):
+   ```bash
+   cp apps/app/.env.local.example apps/app/.env.local
+   ```
 
-### Run both services together
+2. **Start datagill-core** (search service + app postgres):
+   ```bash
+   cd ../datagill-core && make docker-up
+   ```
 
-From the repository root:
+3. **Start the auth database** (BetterAuth runs inside Next.js but needs its own postgres on port 5433):
+   ```bash
+   docker compose up auth-db -d
+   ```
 
-1. Install Docker Desktop.
-2. Run `docker compose -f compose.local.yml up --build`.
-3. Open `http://localhost:3000`.
+4. **Install dependencies and start the UI**:
+   ```bash
+   npm install && npm run dev
+   ```
 
-This starts:
+5. Open `http://localhost:3001`.
 
-- UI on `http://localhost:3000`
-- Search Service on `http://localhost:8082`
+### Ports
+
+| Service | URL |
+|---|---|
+| Next.js (UI + BetterAuth) | http://localhost:3001 |
+| Search service | http://localhost:8082 |
+| Auth postgres | localhost:5433 |
+| App postgres | localhost:5432 |
+
+### Rebuilding the search service
+
+After pulling changes to `datagill-core`:
+```bash
+cd ../datagill-core && docker compose up --build search -d
+```
