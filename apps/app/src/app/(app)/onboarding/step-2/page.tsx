@@ -174,7 +174,7 @@ export default function OnboardingStep2() {
             onClick={() => router.push("/onboarding/step-3")}
             className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Continue to Verification
+            Continue to Team Members
             <ArrowRight className="h-4 w-4" />
           </button>
         </div>
