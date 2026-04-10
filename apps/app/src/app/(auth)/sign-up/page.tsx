@@ -27,7 +27,7 @@ export default function SignUpPage() {
         setError(result.error.message ?? "Sign-up failed.");
         return;
       }
-      router.push("/");
+      router.push("/onboarding/step-1");
     } finally {
       setLoading(false);
     }
