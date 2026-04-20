@@ -4,6 +4,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@datagill/auth/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ArrowRight, Pencil, Shield } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -19,6 +20,7 @@ function slugify(value: string) {
 
 export default function OnboardingStep1() {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [orgName, setOrgName] = useState("");
   const [slug, setSlug] = useState("");
@@ -49,6 +51,10 @@ export default function OnboardingStep1() {
     }
     // Set the new org as active so subsequent API calls (e.g. inviteMember) have an activeOrganizationId
     await authClient.organization.setActive({ organizationId: data.id });
+    // Invalidate the cached JWT — setActive updates activeOrganizationId on the
+    // session, but the token cached by useApiToken still carries organizationId: null.
+    // Force a fresh fetch so step-2's POST /v1/integrations includes the correct claim.
+    await queryClient.invalidateQueries({ queryKey: ["api-token"] });
     router.push("/onboarding/step-2");
   }
 

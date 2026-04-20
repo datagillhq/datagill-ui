@@ -14,7 +14,7 @@ export function useApiToken(): string | null {
   const { data: session } = useSession();
 
   const { data } = useQuery({
-    queryKey: ["api-token", session?.session?.id],
+    queryKey: ["api-token", session?.session?.id, session?.session?.activeOrganizationId],
     enabled: !!session,
     staleTime: 13 * 60 * 1000, // refresh ~2 min before the 15m JWT expiry
     queryFn: async () => {

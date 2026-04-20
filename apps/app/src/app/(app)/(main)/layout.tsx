@@ -2,9 +2,11 @@
 
 import { cn } from "@/lib/utils";
 import { authClient } from "@datagill/auth/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { LayoutDashboard, LogOut, Plug, Settings, UserCircle, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const NAV = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -16,7 +18,30 @@ const NAV = [
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data: session } = authClient.useSession();
+
+  // BetterAuth creates a new session on every sign-in with activeOrganizationId: null.
+  // Restore the active org so the JWT sent to the backend includes a valid organizationId.
+  useEffect(() => {
+    if (!session || session.session.activeOrganizationId) return;
+    // authClient.organization.listOrganizations is a nanostores atom, not callable.
+    // Fetch the list directly via BetterAuth's REST endpoint.
+    fetch("/api/auth/organization/list", { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : []))
+      .then((orgs: Array<{ id: string }>) => {
+        const firstOrg = orgs?.[0];
+        if (!firstOrg) return;
+        return authClient.organization.setActive({ organizationId: firstOrg.id });
+      })
+      .then(() => {
+        // activeOrganizationId is in the api-token query key, so a session update
+        // triggers an automatic refetch. Invalidate as a safety net in case
+        // useSession hasn't propagated the change yet.
+        queryClient.invalidateQueries({ queryKey: ["api-token"] });
+      })
+      .catch(() => {});
+  }, [session, queryClient]);
 
   async function handleSignOut() {
     try {
