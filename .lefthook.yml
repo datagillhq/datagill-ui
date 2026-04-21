@@ -2,7 +2,7 @@ pre-commit:
   commands:
     lint-format:
       glob: "*.{ts,tsx,js,jsx,json}"
-      run: npx biome check --write --unsafe {staged_files}
+      run: npx biome check --write --unsafe --no-errors-on-unmatched {staged_files}
       stage_fixed: true
 
 pre-push:
