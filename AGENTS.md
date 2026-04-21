@@ -347,66 +347,7 @@ A backend engineer's guide to reviewing Next.js PRs. Most backend instincts appl
 
 ## 11. Local Dev Setup
 
-### First-time setup
-
-```bash
-# 1. Copy env file and fill in values
-cp apps/app/.env.example apps/app/.env.local
-
-# 2. Start the auth database
-docker compose up auth-db -d
-
-# 3. Run BetterAuth migrations (creates user, session, account, org tables)
-#    Must be run from repo root. Remove `import "server-only"` from
-#    packages/auth/server.ts first, then re-add it after.
-DATABASE_URL="..." BETTER_AUTH_SECRET="..." BETTER_AUTH_URL="http://localhost:3001" \
-  npx auth@latest migrate --config packages/auth/server.ts
-
-# 4. Start the dev server
-npm run dev
-```
-
-### Env vars required in `apps/app/.env.local`
-
-| Variable | Example |
-|---|---|
-| `DATABASE_URL` | `postgres://datagill:secret@localhost:5433/datagill_auth` |
-| `BETTER_AUTH_SECRET` | any random 32+ char string (`openssl rand -base64 32`) |
-| `BETTER_AUTH_URL` | `http://localhost:3001` |
-| `NEXT_PUBLIC_API_URL` | `http://localhost:8082` |
-
-### After migrating — fix Postgres column types
-
-The `auth@latest migrate` CLI generates SQLite-compatible types. After running it, fix the Postgres column types:
-
-```bash
-docker exec datagill-ui-auth-db-1 psql -U datagill -d datagill_auth -c "
-ALTER TABLE \"user\"
-  ALTER COLUMN \"emailVerified\" TYPE boolean USING (\"emailVerified\"::boolean),
-  ALTER COLUMN \"createdAt\" TYPE timestamptz USING (\"createdAt\"::timestamptz),
-  ALTER COLUMN \"updatedAt\" TYPE timestamptz USING (\"updatedAt\"::timestamptz);
-ALTER TABLE session
-  ALTER COLUMN \"createdAt\" TYPE timestamptz USING (\"createdAt\"::timestamptz),
-  ALTER COLUMN \"updatedAt\" TYPE timestamptz USING (\"updatedAt\"::timestamptz),
-  ALTER COLUMN \"expiresAt\" TYPE timestamptz USING (\"expiresAt\"::timestamptz);
-ALTER TABLE account
-  ALTER COLUMN \"createdAt\" TYPE timestamptz USING (\"createdAt\"::timestamptz),
-  ALTER COLUMN \"updatedAt\" TYPE timestamptz USING (\"updatedAt\"::timestamptz),
-  ALTER COLUMN \"accessTokenExpiresAt\" TYPE timestamptz USING (\"accessTokenExpiresAt\"::timestamptz),
-  ALTER COLUMN \"refreshTokenExpiresAt\" TYPE timestamptz USING (\"refreshTokenExpiresAt\"::timestamptz);
-ALTER TABLE verification
-  ALTER COLUMN \"createdAt\" TYPE timestamptz USING (\"createdAt\"::timestamptz),
-  ALTER COLUMN \"updatedAt\" TYPE timestamptz USING (\"updatedAt\"::timestamptz),
-  ALTER COLUMN \"expiresAt\" TYPE timestamptz USING (\"expiresAt\"::timestamptz);
-ALTER TABLE organization ALTER COLUMN \"createdAt\" TYPE timestamptz USING (\"createdAt\"::timestamptz);
-ALTER TABLE member ALTER COLUMN \"createdAt\" TYPE timestamptz USING (\"createdAt\"::timestamptz);
-ALTER TABLE invitation ALTER COLUMN \"expiresAt\" TYPE timestamptz USING (\"expiresAt\"::timestamptz);
-"
-```
-
-### Re-running migrations
-
-If the BetterAuth schema changes (plugin added, version bump), re-run step 3 then the type fixes above.
+See [LOCALSETUP.md](/Users/berdem/Documents/Work/Projects/Git/datagill/datagill-ui/LOCALSETUP.md:1) for first-time setup, quick-start commands for returning developers, migration notes, and troubleshooting.
 
 ---
 
