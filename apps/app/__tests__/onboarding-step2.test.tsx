@@ -12,6 +12,10 @@ vi.mock("@/hooks/use-api-token", () => ({
   useApiToken: () => "test-jwt-token",
 }));
 
+vi.mock("@/lib/github-auth", () => ({
+  startGitHubAuth: vi.fn(),
+}));
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
@@ -53,10 +57,13 @@ vi.mock("@/components/shared/integration-modal", () => ({
 }));
 
 import OnboardingStep2 from "@/app/(app)/onboarding/step-2/page";
+import { startGitHubAuth } from "@/lib/github-auth";
 
 describe("OnboardingStep2", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(startGitHubAuth).mockImplementation(() => new Promise(() => {}));
+    window.history.replaceState(null, "", "/onboarding/step-2");
   });
 
   it("renders all providers", () => {
@@ -92,6 +99,13 @@ describe("OnboardingStep2", () => {
     render(<OnboardingStep2 />);
     fireEvent.click(screen.getByText("LaunchDarkly"));
     expect(screen.getByTestId("modal")).toBeInTheDocument();
+  });
+
+  it("starts GitHub auth instead of opening the modal", () => {
+    render(<OnboardingStep2 />);
+    fireEvent.click(screen.getByText("GitHub"));
+    expect(startGitHubAuth).toHaveBeenCalledWith("test-jwt-token", "/onboarding/step-2");
+    expect(screen.queryByTestId("modal")).not.toBeInTheDocument();
   });
 
   it("shows connected count and enables Continue after successful connection", async () => {

@@ -2,12 +2,13 @@
 
 import { type Integration, IntegrationModal } from "@/components/shared/integration-modal";
 import { useApiToken } from "@/hooks/use-api-token";
+import { startGitHubAuth } from "@/lib/github-auth";
 import { PROVIDERS, type Provider } from "@/lib/providers";
 import { ArrowRight, Check, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type ConnectedMap = Record<string, Integration>;
 
@@ -19,6 +20,8 @@ export default function OnboardingStep2() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [connected, setConnected] = useState<ConnectedMap>({});
   const [modalProvider, setModalProvider] = useState<Provider | null>(null);
+  const [githubStatus, setGitHubStatus] = useState<"idle" | "starting">("idle");
+  const [githubError, setGitHubError] = useState<string | null>(null);
 
   const allTags = useMemo(() => Array.from(new Set(PROVIDERS.flatMap((p) => p.tags))).sort(), []);
 
@@ -32,7 +35,48 @@ export default function OnboardingStep2() {
 
   const connectedCount = Object.keys(connected).length;
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("provider") !== "github") return;
+
+    if (params.get("status") === "connected") {
+      setConnected((prev) => ({
+        ...prev,
+        github: { key: "github", source: "github", state: "active" },
+      }));
+      window.history.replaceState(null, "", window.location.pathname);
+      return;
+    }
+
+    if (params.get("status") === "error") {
+      setGitHubError("GitHub connection failed. Please try again.");
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, []);
+
+  async function handleGitHubConnect() {
+    if (githubStatus === "starting") return;
+    if (!token) {
+      setGitHubError("Session token is still loading. Please try again in a moment.");
+      return;
+    }
+
+    setGitHubStatus("starting");
+    setGitHubError(null);
+    try {
+      const installURL = await startGitHubAuth(token, "/onboarding/step-2");
+      window.location.assign(installURL);
+    } catch {
+      setGitHubStatus("idle");
+      setGitHubError("GitHub connection failed. Please try again.");
+    }
+  }
+
   function handleConnect(provider: Provider) {
+    if (provider.id === "github") {
+      handleGitHubConnect();
+      return;
+    }
     setModalProvider(provider);
   }
 
@@ -57,6 +101,7 @@ export default function OnboardingStep2() {
           Select at least one integration to continue. These tools will allow DataGill to sync and
           verify your organization's workflow data.
         </p>
+        {githubError && <p className="mb-6 text-sm text-destructive">{githubError}</p>}
 
         {/* Search + Categories */}
         <div className="mb-6 flex gap-3">
@@ -111,9 +156,10 @@ export default function OnboardingStep2() {
                   key={provider.id}
                   type="button"
                   onClick={() => handleConnect(provider)}
+                  disabled={provider.id === "github" && githubStatus === "starting"}
                   className={`relative rounded-xl border bg-card p-5 text-left transition-colors hover:border-indigo-500/50 ${
                     isConnected ? "border-indigo-500" : "border-border"
-                  }`}
+                  } disabled:cursor-not-allowed disabled:opacity-60`}
                 >
                   {isConnected && (
                     <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600">

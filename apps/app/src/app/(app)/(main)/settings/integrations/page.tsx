@@ -8,9 +8,10 @@ import {
   useIntegrations,
   useToggleIntegration,
 } from "@/hooks/use-integrations";
+import { startGitHubAuth } from "@/lib/github-auth";
 import { PROVIDERS } from "@/lib/providers";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type ModalState =
   | { mode: "create"; providerId: string }
@@ -25,12 +26,48 @@ export default function SettingsIntegrationsPage() {
   const { mutate: toggle, isPending: isToggling } = useToggleIntegration();
 
   const [modal, setModal] = useState<ModalState>(null);
+  const [githubStatus, setGitHubStatus] = useState<"idle" | "starting">("idle");
+  const [githubError, setGitHubError] = useState<string | null>(null);
 
   const modalProvider = modal ? (PROVIDERS.find((p) => p.id === modal.providerId) ?? null) : null;
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("provider") !== "github") return;
+
+    if (params.get("status") === "connected") {
+      queryClient.invalidateQueries({ queryKey: ["integrations"] });
+      window.history.replaceState(null, "", window.location.pathname);
+      return;
+    }
+
+    if (params.get("status") === "error") {
+      setGitHubError("GitHub connection failed. Please try again.");
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, [queryClient]);
 
   function handleConnectSuccess() {
     queryClient.invalidateQueries({ queryKey: ["integrations"] });
     setModal(null);
+  }
+
+  async function handleGitHubConnect() {
+    if (githubStatus === "starting") return;
+    if (!token) {
+      setGitHubError("Session token is still loading. Please try again in a moment.");
+      return;
+    }
+
+    setGitHubStatus("starting");
+    setGitHubError(null);
+    try {
+      const installURL = await startGitHubAuth(token, "/settings/integrations");
+      window.location.assign(installURL);
+    } catch {
+      setGitHubStatus("idle");
+      setGitHubError("GitHub connection failed. Please try again.");
+    }
   }
 
   return (
@@ -41,6 +78,7 @@ export default function SettingsIntegrationsPage() {
         <p className="mt-1 text-sm text-muted-foreground">
           Connect and configure your integrations.
         </p>
+        {githubError && <p className="mt-3 text-sm text-destructive">{githubError}</p>}
       </div>
 
       {/* Grid — always shows all providers */}
@@ -61,19 +99,30 @@ export default function SettingsIntegrationsPage() {
                 provider={provider}
                 isToggling={isToggling}
                 onToggle={(state: IntegrationState) => toggle({ key: integration.key, state })}
-                onConfigure={() =>
+                onConfigure={() => {
+                  if (provider.id === "github") {
+                    handleGitHubConnect();
+                    return;
+                  }
                   setModal({
                     mode: "edit",
                     integrationKey: integration.key,
                     providerId: provider.id,
-                  })
-                }
+                  });
+                }}
               />
             ) : (
               <IntegrationCard
                 key={provider.id}
                 provider={provider}
-                onConnect={() => setModal({ mode: "create", providerId: provider.id })}
+                isConnecting={provider.id === "github" && githubStatus === "starting"}
+                onConnect={() => {
+                  if (provider.id === "github") {
+                    handleGitHubConnect();
+                    return;
+                  }
+                  setModal({ mode: "create", providerId: provider.id });
+                }}
               />
             );
           })}

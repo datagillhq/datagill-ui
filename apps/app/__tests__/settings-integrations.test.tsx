@@ -13,6 +13,14 @@ vi.mock("@/hooks/use-integrations", () => ({
   useToggleIntegration: vi.fn(),
 }));
 
+vi.mock("@/hooks/use-api-token", () => ({
+  useApiToken: () => "test-jwt-token",
+}));
+
+vi.mock("@/lib/github-auth", () => ({
+  startGitHubAuth: vi.fn(),
+}));
+
 vi.mock("@/components/shared/integration-modal", () => ({
   IntegrationModal: ({
     open,
@@ -39,11 +47,15 @@ vi.mock("@datagill/auth/client", () => ({
 
 import SettingsIntegrationsPage from "@/app/(app)/(main)/settings/integrations/page";
 import * as hooks from "@/hooks/use-integrations";
+import { startGitHubAuth } from "@/lib/github-auth";
 
 const mockToggle = vi.fn();
 
 beforeEach(() => {
   mockToggle.mockClear();
+  vi.mocked(startGitHubAuth).mockReset();
+  vi.mocked(startGitHubAuth).mockImplementation(() => new Promise(() => {}));
+  window.history.replaceState(null, "", "/settings/integrations");
 });
 
 function setupHooks(integrations: hooks.ConnectedIntegration[] | undefined, loading = false) {
@@ -108,5 +120,25 @@ describe("SettingsIntegrationsPage", () => {
     render(<SettingsIntegrationsPage />, { wrapper });
     fireEvent.click(screen.getAllByRole("button", { name: "Connect" })[0]);
     expect(screen.getByText("IntegrationModal-create")).toBeInTheDocument();
+  });
+
+  it("starts GitHub auth instead of opening the create modal", () => {
+    setupHooks([]);
+    render(<SettingsIntegrationsPage />, { wrapper });
+
+    fireEvent.click(screen.getAllByRole("button", { name: "Connect" })[2]);
+
+    expect(startGitHubAuth).toHaveBeenCalledWith("test-jwt-token", "/settings/integrations");
+    expect(screen.queryByText("IntegrationModal-create")).not.toBeInTheDocument();
+  });
+
+  it("starts GitHub auth instead of opening the edit modal for connected GitHub", () => {
+    setupHooks([{ key: "int-uuid-github", source: "github", state: "active" as const }]);
+    render(<SettingsIntegrationsPage />, { wrapper });
+
+    fireEvent.click(screen.getByRole("button", { name: "Configure" }));
+
+    expect(startGitHubAuth).toHaveBeenCalledWith("test-jwt-token", "/settings/integrations");
+    expect(screen.queryByText("IntegrationModal-edit")).not.toBeInTheDocument();
   });
 });
