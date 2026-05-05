@@ -347,7 +347,7 @@ A backend engineer's guide to reviewing Next.js PRs. Most backend instincts appl
 
 ## 11. Local Dev Setup
 
-See [LOCALSETUP.md](/Users/berdem/Documents/Work/Projects/Git/datagill/datagill-ui/LOCALSETUP.md:1) for first-time setup, quick-start commands for returning developers, migration notes, and troubleshooting.
+See [LOCALSETUP.md](LOCALSETUP.md) for first-time setup, quick-start commands for returning developers, migration notes, and troubleshooting.
 
 ---
 
