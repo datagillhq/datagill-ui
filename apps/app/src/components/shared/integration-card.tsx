@@ -18,6 +18,7 @@ type DisconnectedProps = {
   integration?: never;
   provider: Provider;
   onConnect: () => void;
+  isConnecting?: boolean;
   onConfigure?: never;
   onToggle?: never;
   isToggling?: never;
@@ -90,9 +91,10 @@ export function IntegrationCard(props: Props) {
           <button
             type="button"
             onClick={props.onConnect}
-            className="w-full rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-indigo-700"
+            disabled={props.isConnecting}
+            className="w-full rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Connect
+            {props.isConnecting ? "Connecting..." : "Connect"}
           </button>
         )}
       </div>
