@@ -43,6 +43,67 @@ export type AuditLogPage = {
   data: AuditLogEntry[];
 };
 
+export type PullRequestUser = {
+  login: string;
+  id: number;
+};
+
+export type PullRequestRepository = {
+  owner: string;
+  name: string;
+  id: string;
+};
+
+export type PullRequestState = "merged" | "closed" | (string & {});
+
+export type PullRequestEnrichmentStatus =
+  | "pending"
+  | "in_progress"
+  | "completed"
+  | "failed"
+  | (string & {});
+
+export type PullRequestData = {
+  key: string;
+  title: string;
+  state: PullRequestState;
+  url: string;
+  number: number;
+  repository: PullRequestRepository;
+  author: PullRequestUser;
+  labels: string[];
+  assignees: PullRequestUser[];
+  createdAt?: string;
+  mergedAt?: string;
+  diff: {
+    sha: string;
+    branches: {
+      source: string;
+      target: string;
+    };
+    stats: {
+      additions: number;
+      deletions: number;
+      changedFiles: number;
+    };
+  };
+  enrichment: {
+    status: PullRequestEnrichmentStatus;
+    enrichedAt?: string | null;
+    featureFlags: {
+      added: string[];
+      removed: string[];
+    };
+  };
+};
+
+export type PullRequestsPage = {
+  total: number;
+  page: number;
+  count: number;
+  data: PullRequestData[];
+};
+
 export type DateRange = { from: string; to: string };
 
 // Backend requires RFC3339 timestamps, not bare dates.
@@ -144,6 +205,24 @@ export function useAuditLog(range: DateRange, page: number) {
         { token }
       );
       return res?.data?.audit_log ?? null;
+    },
+  });
+}
+
+export function usePullRequests(range: DateRange, page: number, limit = 25) {
+  const token = useApiToken();
+
+  return useQuery({
+    queryKey: ["pull-requests", range, page, limit, token],
+    enabled: !!token,
+    retry: false,
+    staleTime: 30_000,
+    queryFn: async () => {
+      const res = await apiFetch<Envelope<"pull_requests", PullRequestsPage>>(
+        buildUrl("pull_requests", range, { page: String(page), limit: String(limit) }),
+        { token }
+      );
+      return res?.data?.pull_requests ?? null;
     },
   });
 }
