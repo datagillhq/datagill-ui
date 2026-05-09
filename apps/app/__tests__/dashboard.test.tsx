@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/hooks/use-analytics", () => ({
@@ -6,9 +6,10 @@ vi.mock("@/hooks/use-analytics", () => ({
   useTopTeams: vi.fn(),
   useVelocity: vi.fn(),
   useAuditLog: vi.fn(),
-  makeDateRange: (_days: number) => ({
-    from: "2026-04-01T00:00:00Z",
-    to: "2026-04-08T00:00:00Z",
+  usePullRequests: vi.fn(),
+  makeDateRange: (days: number) => ({
+    from: `range-${days}-from`,
+    to: `range-${days}-to`,
   }),
 }));
 
@@ -22,18 +23,21 @@ import DashboardPage from "@/app/(app)/(main)/dashboard/page";
 import * as analytics from "@/hooks/use-analytics";
 
 const emptyAuditLog: analytics.AuditLogPage = { data: [], total: 0, page: 1, count: 0 };
+const emptyPullRequests: analytics.PullRequestsPage = { data: [], total: 0, page: 1, count: 0 };
 
 function setup({
   flags = [],
   teams = [],
   velocity = {} as analytics.VelocityData,
   auditLog = emptyAuditLog,
+  pullRequests = emptyPullRequests,
   loading = false,
 }: {
   flags?: analytics.LaunchedFlag[];
   teams?: analytics.TeamActivity[];
   velocity?: Partial<analytics.VelocityData>;
   auditLog?: analytics.AuditLogPage | null;
+  pullRequests?: analytics.PullRequestsPage | null;
   loading?: boolean;
 } = {}) {
   vi.mocked(analytics.useLaunchedWins).mockReturnValue({
@@ -52,6 +56,10 @@ function setup({
     data: auditLog,
     isLoading: loading,
   } as ReturnType<typeof analytics.useAuditLog>);
+  vi.mocked(analytics.usePullRequests).mockReturnValue({
+    data: pullRequests,
+    isLoading: loading,
+  } as ReturnType<typeof analytics.usePullRequests>);
   render(<DashboardPage />);
 }
 
@@ -212,5 +220,63 @@ describe("DashboardPage", () => {
     expect(screen.getByText("Last 30 days")).toBeInTheDocument();
     fireEvent.click(screen.getByText("Last 30 days"));
     expect(screen.queryByText("Last 90 days")).not.toBeInTheDocument();
+  });
+
+  it("calls pull request analytics with selected range and page", () => {
+    const pullRequests = {
+      data: Array.from({ length: 25 }, (_, i) => ({
+        key: `github:acme/web:${i}`,
+        title: `Pull request ${i}`,
+        state: "merged",
+        url: `https://github.com/acme/web/pull/${i}`,
+        number: i,
+        repository: { owner: "acme", name: "web", id: "repo-1" },
+        author: { login: "sarah", id: 1 },
+        labels: [],
+        assignees: [],
+        createdAt: "2026-04-05T14:12:00Z",
+        diff: {
+          sha: "abc123",
+          branches: { source: "feature/checkout", target: "main" },
+          stats: { additions: 10, deletions: 1, changedFiles: 2 },
+        },
+        enrichment: {
+          status: "completed",
+          enrichedAt: "2026-04-05T17:00:00Z",
+          featureFlags: { added: [], removed: [] },
+        },
+      })),
+      total: 50,
+      page: 1,
+      count: 25,
+    } satisfies analytics.PullRequestsPage;
+
+    setup({ pullRequests });
+
+    expect(analytics.usePullRequests).toHaveBeenLastCalledWith(
+      { from: "range-7-from", to: "range-7-to" },
+      1
+    );
+
+    const pullRequestsSection = screen
+      .getByRole("heading", { name: "Pull Requests" })
+      .closest("section");
+    expect(pullRequestsSection).not.toBeNull();
+    fireEvent.click(
+      within(pullRequestsSection as HTMLElement).getByRole("button", { name: /next/i })
+    );
+
+    expect(analytics.usePullRequests).toHaveBeenLastCalledWith(
+      { from: "range-7-from", to: "range-7-to" },
+      2
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /last 7 days/i }));
+    fireEvent.click(screen.getByText("Last 30 days"));
+
+    expect(analytics.usePullRequests).toHaveBeenLastCalledWith(
+      { from: "range-30-from", to: "range-30-to" },
+      1
+    );
   });
 });
