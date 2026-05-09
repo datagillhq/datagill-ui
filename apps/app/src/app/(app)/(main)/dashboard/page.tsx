@@ -2,12 +2,14 @@
 
 import { ActivityLog } from "@/components/dashboard/activity-log";
 import { LaunchedWins } from "@/components/dashboard/launched-wins";
+import { PullRequests } from "@/components/dashboard/pull-requests";
 import { StatStrip } from "@/components/dashboard/stat-strip";
 import { TopTeams } from "@/components/dashboard/top-teams";
 import {
   makeDateRange,
   useAuditLog,
   useLaunchedWins,
+  usePullRequests,
   useTopTeams,
   useVelocity,
 } from "@/hooks/use-analytics";
@@ -24,12 +26,17 @@ export default function DashboardPage() {
   const [days, setDays] = useState<7 | 30 | 90>(7);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [auditPage, setAuditPage] = useState(1);
+  const [pullRequestsPage, setPullRequestsPage] = useState(1);
   const range = makeDateRange(days);
 
   const { data: flags, isLoading: loadingFlags } = useLaunchedWins(range);
   const { data: teams, isLoading: loadingTeams } = useTopTeams(range);
   const { data: velocity, isLoading: loadingVelocity } = useVelocity(range);
   const { data: auditLog, isLoading: loadingAudit } = useAuditLog(range, auditPage);
+  const { data: pullRequests, isLoading: loadingPullRequests } = usePullRequests(
+    range,
+    pullRequestsPage
+  );
 
   const selectedLabel = DATE_PRESETS.find((p) => p.days === days)?.label ?? "Last 7 days";
   const statsLoading = loadingFlags || loadingTeams || loadingVelocity || loadingAudit;
@@ -37,6 +44,7 @@ export default function DashboardPage() {
   function handleDaysChange(d: 7 | 30 | 90) {
     setDays(d);
     setAuditPage(1);
+    setPullRequestsPage(1);
     setDropdownOpen(false);
   }
 
@@ -107,6 +115,13 @@ export default function DashboardPage() {
         loading={loadingAudit}
         page={auditPage}
         onPageChange={setAuditPage}
+      />
+
+      <PullRequests
+        pullRequests={pullRequests}
+        loading={loadingPullRequests}
+        page={pullRequestsPage}
+        onPageChange={setPullRequestsPage}
       />
 
       {/* Bottom: Launched Wins + Top Teams */}
