@@ -55,3 +55,7 @@ After pulling changes to `datagill-core`:
 ```bash
 cd ../datagill-core && docker compose up --build search -d
 ```
+
+## License
+
+[Apache License 2.0](./LICENSE).
