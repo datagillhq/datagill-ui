@@ -4,6 +4,10 @@ on:
   pull_request:
     branches: [main]
 
+# Read-only token: CI only needs to check out code.
+permissions:
+  contents: read
+
 jobs:
   check:
     name: Typecheck, Lint & Test
