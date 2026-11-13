@@ -13,7 +13,7 @@ DataGill UI is the web frontend for the DataGill platform. It connects to two ba
 - **Integration Management API** (`/v1/integrations/*`) — integration CRUD
 - **Analytics API** (`/v1/analytics?metric=...`) — dashboard metrics
 
-For the full backend API contracts, read `datagill-core/docs/backend/integration-management-api.md` and `datagill-core/docs/backend/analytics-api.md`.
+For the full backend API contracts, read `datagill-core/docs/api/integrations.md` and `datagill-core/docs/api/analytics.md`. Page designs are in `docs/design/`.
 
 ### What Is NOT in Scope
 
